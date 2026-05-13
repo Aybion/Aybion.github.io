@@ -143,14 +143,46 @@
             color: #ffd700;
             font-weight: bold;
         }
+
+        /* ========== OYUN BUTONLARI ========== */
+        .oyun-butonlari {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .oyun-buton {
+            background: linear-gradient(45deg, #c084fc, #ffd700);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 0 15px rgba(192,132,252,0.6);
+            transition: 0.3s;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .oyun-buton:hover {
+            box-shadow: 0 0 25px gold;
+            transform: scale(1.05);
+        }
+
+        .oyun-buton-2048 {
+            background: linear-gradient(45deg, #f2b179, #ffd700);
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Test 1</h1>
+        <h1>Merhaba ben dünyanın babapiro insanı Eymen Yağız Biçer</h1>
 
-        <!-- ========== ZİYARETÇİ SAYACI (KENDİ YAPIMIMIZ) ========== -->
+        <!-- ========== ZİYARETÇİ SAYACI ========== -->
         <div style="text-align: center;">
             <div class="sayac-kutusu">
                 <span class="sayac-sayi" id="sayac">0</span>
@@ -221,24 +253,18 @@
         </div>
         <!-- ========== OYUNLARIM BÖLÜMÜ SONU ========== -->
         
-        <h2>🕹️ Eymen'in Yılan Oyunu</h2>
-        <p>Aşağıdaki butona tıklayarak hemen oynayabilirsin:</p>
-        <div style="text-align: center; margin: 20px 0;">
-            <a href="oyun.html" style="
-                background: linear-gradient(45deg, #c084fc, #ffd700);
-                color: #000;
-                padding: 15px 40px;
-                border-radius: 30px;
-                font-size: 1.3em;
-                font-weight: bold;
-                text-decoration: none;
-                box-shadow: 0 0 15px rgba(192,132,252,0.6);
-                transition: 0.3s;
-                display: inline-block;
-            " onmouseover="this.style.boxShadow='0 0 25px gold'" onmouseout="this.style.boxShadow='0 0 15px rgba(192,132,252,0.6)'">
-                🐍 Yılan Oyununu Oyna
+        <!-- ========== SİTEDEKİ OYUNLAR ========== -->
+        <h2>🕹️ Eymen'in Oyunları</h2>
+        <p>Aşağıdaki butonlara tıklayarak hemen oynayabilirsin:</p>
+        <div class="oyun-butonlari">
+            <a href="oyun.html" class="oyun-buton">
+                🐍 Yılan Oyunu
+            </a>
+            <a href="2048.html" class="oyun-buton oyun-buton-2048">
+                🔢 2048
             </a>
         </div>
+        <!-- ========== OYUNLAR SONU ========== -->
 
         <h2>İletişim</h2>
         <p>
@@ -248,33 +274,20 @@
 
     <!-- ========== SAYAÇ JAVASCRIPT ========== -->
     <script>
-        // Ziyaretçi sayacı
         (function() {
-            // Ana sayacı localStorage'dan oku (tüm kullanıcılardan bağımsız çalışır)
-            // Not: Bu sadece o anki kullanıcının sayacıdır.
-            // Gerçek bir sayaç için sunucu gerekir, ama biz eğlencesine yapıyoruz.
-            
             let sayi = localStorage.getItem("eymen_sayac");
-            
             if (!sayi) {
-                // İlk kez gelen ziyaretçi
-                sayi = Math.floor(Math.random() * 50) + 1; // 1-50 arası rastgele başlat
+                sayi = Math.floor(Math.random() * 50) + 1;
                 localStorage.setItem("eymen_sayac", sayi);
             } else {
                 sayi = parseInt(sayi);
             }
-            
-            // Bu ziyaretçi daha önce bu cihazdan geldi mi?
             let geldiMi = sessionStorage.getItem("eymen_bu_oturum");
-            
             if (!geldiMi) {
-                // Bu oturumda ilk kez sayfayı açtı, sayacı artır
                 sayi = sayi + 1;
                 localStorage.setItem("eymen_sayac", sayi);
                 sessionStorage.setItem("eymen_bu_oturum", "evet");
             }
-            
-            // Sayacı göster
             document.getElementById("sayac").innerText = sayi;
         })();
     </script>
