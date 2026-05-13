@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Gizli Yorumlar</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0d0d0d, #1a0033, #0d0d0d);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(128,0,255,0.3);
+        }
+        h1 {
+            color: #ffd700;
+            text-align: center;
+            text-shadow: 0 0 10px gold;
+        }
+        .sifre-kutu {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .sifre-kutu input {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid #c084fc;
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+            font-size: 1.2em;
+            text-align: center;
+            width: 200px;
+            outline: none;
+            letter-spacing: 5px;
+        }
+        .sifre-kutu button {
+            background: linear-gradient(45deg, #c084fc, #ffd700);
+            color: #000;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.3s;
+        }
+        .sifre-kutu button:hover {
+            box-shadow: 0 0 20px gold;
+        }
+        .hata {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .yorum-kart {
+            background: rgba(30,10,60,0.8);
+            border: 2px solid #c084fc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .yorum-ust {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .yorum-isim {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .yorum-tarih {
+            color: #888;
+            font-size: 0.8em;
+        }
+        .yorum-metin {
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        .sil-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .sil-btn:hover {
+            background: #cc0000;
+        }
+        .temizle-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: 0.3s;
+        }
+        .temizle-btn:hover {
+            background: #cc0000;
+            box-shadow: 0 0 15px red;
+        }
+        .bos {
+            text-align: center;
+            color: #888;
+            margin: 40px 0;
+            font-size: 1.2em;
+        }
+        .cikis-btn {
+            background: transparent;
+            border: 2px solid #c084fc;
+            color: #c084fc;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            transition: 0.3s;
+        }
+        .cikis-btn:hover {
+            background: #c084fc;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="sifreEkrani">
+        <h1>🔐 Gizli Yorumlar</h1>
+        <div class="sifre-kutu">
+            <input type="password" id="sifreInput" placeholder="Şifre" maxlength="10">
+            <br><br>
+            <button onclick="sifreKontrol()">🔓 Giriş</button>
+        </div>
+        <p id="hataMesaj" class="hata"></p>
+    </div>
+
+    <div class="container" id="yorumEkrani" style="display: none;">
+        <button class="cikis-btn" onclick="cikisYap()">🚪 Çıkış Yap</button>
+        <h1>⭐ Tüm Yorumlar</h1>
+        <div id="yorumListesi"></div>
+        <button class="temizle-btn" onclick="tumunuSil()">🗑️ Tüm Yorumları Sil</button>
+    </div>
+
+    <script>
+        const DOGRU_SIFRE = "852963";
+
+        function sifreKontrol() {
+            const girilen = document.getElementById("sifreInput").value;
+            const hata = document.getElementById("hataMesaj");
+
+            if (girilen === DOGRU_SIFRE) {
+                document.getElementById("sifreEkrani").style.display = "none";
+                document.getElementById("yorumEkrani").style.display = "block";
+                yorumlariListele();
+            } else {
+                hata.innerText = "❌ Yanlış şifre! Tekrar dene.";
+                document.getElementById("sifreInput").value = "";
+            }
+        }
+
+        function cikisYap() {
+            document.getElementById("sifreEkrani").style.display = "block";
+            document.getElementById("yorumEkrani").style.display = "none";
+            document.getElementById("sifreInput").value = "";
+            document.getElementById("hataMesaj").innerText = "";
+        }
+
+        function yorumlariListele() {
+            const liste = document.getElementById("yorumListesi");
+            const kayitli = localStorage.getItem("eymen_gizli_yorumlar");
+            
+            if (!kayitli) {
+                liste.innerHTML = '<p class="bos">📭 Henüz yorum yok.</p>';
+                return;
+            }
+
+            const yorumlar = JSON.parse(kayitli);
+            
+            if (yorumlar.length === 0) {
+                liste.innerHTML = '<p class="bos">📭 Henüz yorum yok.</p>';
+                return;
+            }
+
+            let html = "";
+            yorumlar.forEach((yorum, index) => {
+                let yildizlar = "";
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= yorum.yildiz) {
+                        yildizlar += "⭐";
+                    } else {
+                        yildizlar += "☆";
+                    }
+                }
+
+                html += `
+                    <div class="yorum-kart">
+                        <div class="yorum-ust">
+                            <span class="yorum-isim">${yildizlar} - ${yorum.isim}</span>
+                            <span class="yorum-tarih">${yorum.tarih}</span>
+                        </div>
+                        <div class="yorum-metin">${yorum.metin}</div>
+                        <button class="sil-btn" onclick="yorumSil(${index})">🗑️ Sil</button>
+                    </div>
+                `;
+            });
+
+            liste.innerHTML = html;
+        }
+
+        function yorumSil(index) {
+            const kayitli = localStorage.getItem("eymen_gizli_yorumlar");
+            if (!kayitli) return;
+
+            const yorumlar = JSON.parse(kayitli);
+            yorumlar.splice(index, 1);
+            localStorage.setItem("eymen_gizli_yorumlar", JSON.stringify(yorumlar));
+            yorumlariListele();
+        }
+
+        function tumunuSil() {
+            if (confirm("Tüm yorumları silmek istediğine emin misin? Bu işlem geri alınamaz!")) {
+                localStorage.removeItem("eymen_gizli_yorumlar");
+                yorumlariListele();
+            }
+        }
+
+        // Enter tuşuyla da giriş yapılabilsin
+        document.getElementById("sifreInput").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                sifreKontrol();
+            }
+        });
+    </script>
+
+</body>
+</html>
