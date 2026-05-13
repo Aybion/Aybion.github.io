@@ -175,12 +175,97 @@
         .oyun-buton-2048 {
             background: linear-gradient(45deg, #f2b179, #ffd700);
         }
+
+        /* ========== YORUM BÖLÜMÜ ========== */
+        .yorum-bolumu {
+            text-align: center;
+        }
+
+        .yildiz-secim {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            font-size: 2.5em;
+            cursor: pointer;
+        }
+
+        .yildiz-secim span {
+            transition: 0.2s;
+            filter: grayscale(100%);
+            user-select: none;
+        }
+
+        .yildiz-secim span.aktif {
+            filter: grayscale(0%);
+            transform: scale(1.3);
+        }
+
+        .yildiz-secim span:hover {
+            filter: grayscale(0%);
+            transform: scale(1.2);
+        }
+
+        .yorum-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .yorum-form input,
+        .yorum-form textarea {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid #c084fc;
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+        }
+
+        .yorum-form input::placeholder,
+        .yorum-form textarea::placeholder {
+            color: #888;
+        }
+
+        .yorum-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .yorum-form button {
+            background: linear-gradient(45deg, #c084fc, #ffd700);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .yorum-form button:hover {
+            box-shadow: 0 0 20px gold;
+            transform: scale(1.03);
+        }
+
+        #yorum-mesaj {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1em;
+            color: #ffd700;
+            min-height: 24px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Test 1</h1>
+        <h1>Test 1.0</h1>
 
         <!-- ========== ZİYARETÇİ SAYACI ========== -->
         <div style="text-align: center;">
@@ -270,6 +355,28 @@
         <p>
             Bana <a href="mailto:eymen6152@yahoo.com">eymen6152@yahoo.com</a> e-posta adresinden ulaşabilirsiniz.
         </p>
+
+        <!-- ========== YORUM BÖLÜMÜ ========== -->
+        <h2>⭐ Siteyi Değerlendir</h2>
+        <div class="yorum-bolumu">
+            <div class="yildiz-secim" id="yildizlar">
+                <span data-deger="1">⭐</span>
+                <span data-deger="2">⭐</span>
+                <span data-deger="3">⭐</span>
+                <span data-deger="4">⭐</span>
+                <span data-deger="5">⭐</span>
+            </div>
+            <p style="text-align:center; color: #c084fc; font-size: 0.9em;" id="yildiz-sayi">Seçtiğin yıldız: 0</p>
+            
+            <div class="yorum-form">
+                <input type="text" id="yorum-isim" placeholder="Adın (istersen boş bırak)">
+                <textarea id="yorum-metin" placeholder="Yorumun..."></textarea>
+                <button onclick="yorumGonder()">⭐ Gönder</button>
+            </div>
+            <p id="yorum-mesaj"></p>
+        </div>
+        <!-- ========== YORUM BÖLÜMÜ SONU ========== -->
+
     </div>
 
     <!-- ========== SAYAÇ JAVASCRIPT ========== -->
@@ -290,6 +397,82 @@
             }
             document.getElementById("sayac").innerText = sayi;
         })();
+    </script>
+
+    <!-- ========== YORUM JAVASCRIPT ========== -->
+    <script>
+        let secilenYildiz = 0;
+        const yildizlar = document.querySelectorAll("#yildizlar span");
+        const yildizSayi = document.getElementById("yildiz-sayi");
+
+        yildizlar.forEach(yildiz => {
+            yildiz.addEventListener("click", function() {
+                secilenYildiz = parseInt(this.getAttribute("data-deger"));
+                yildizSayi.innerText = "Seçtiğin yıldız: " + secilenYildiz;
+                
+                // Yıldızları renklendir
+                yildizlar.forEach(y => y.classList.remove("aktif"));
+                this.classList.add("aktif");
+                // Seçilen yıldıza kadar hepsini aktif yap
+                let onceki = this.previousElementSibling;
+                while (onceki) {
+                    onceki.classList.add("aktif");
+                    onceki = onceki.previousElementSibling;
+                }
+            });
+        });
+
+        function yorumGonder() {
+            const isim = document.getElementById("yorum-isim").value.trim();
+            const metin = document.getElementById("yorum-metin").value.trim();
+            const mesaj = document.getElementById("yorum-mesaj");
+
+            if (secilenYildiz === 0) {
+                mesaj.innerText = "Lütfen yıldız seç!";
+                mesaj.style.color = "#ff6b6b";
+                return;
+            }
+
+            if (metin === "") {
+                mesaj.innerText = "Lütfen yorum yaz!";
+                mesaj.style.color = "#ff6b6b";
+                return;
+            }
+
+            const yeniYorum = {
+                yildiz: secilenYildiz,
+                isim: isim || "İsimsiz",
+                metin: metin,
+                tarih: new Date().toLocaleString("tr-TR")
+            };
+
+            // Önceki yorumları al
+            let tumYorumlar = [];
+            const kayitli = localStorage.getItem("eymen_gizli_yorumlar");
+            if (kayitli) {
+                tumYorumlar = JSON.parse(kayitli);
+            }
+
+            // Yeni yorumu ekle
+            tumYorumlar.push(yeniYorum);
+            localStorage.setItem("eymen_gizli_yorumlar", JSON.stringify(tumYorumlar));
+
+            // Formu temizle
+            document.getElementById("yorum-isim").value = "";
+            document.getElementById("yorum-metin").value = "";
+            secilenYildiz = 0;
+            yildizSayi.innerText = "Seçtiğin yıldız: 0";
+            yildizlar.forEach(y => y.classList.remove("aktif"));
+
+            // Başarı mesajı
+            mesaj.innerText = "✅ Yorumun gönderildi! Teşekkürler.";
+            mesaj.style.color = "#ffd700";
+
+            // 3 saniye sonra mesajı sil
+            setTimeout(() => {
+                mesaj.innerText = "";
+            }, 3000);
+        }
     </script>
 
 </body>
