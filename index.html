@@ -71,18 +71,27 @@
         .sayac-kutusu {
             text-align: center;
             margin: 20px 0;
+            background: rgba(30, 10, 60, 0.6);
+            border: 2px solid #c084fc;
+            border-radius: 15px;
+            padding: 15px;
+            display: inline-block;
+            width: auto;
+            min-width: 180px;
+            box-shadow: 0 0 15px rgba(192, 132, 252, 0.4);
         }
 
-        .sayac-kutusu img {
-            border-radius: 10px !important;
-            border: 2px solid #c084fc !important;
-            box-shadow: 0 0 15px rgba(192, 132, 252, 0.5) !important;
-            display: inline-block !important;
+        .sayac-sayi {
+            font-size: 3em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px gold;
+            display: block;
         }
 
         .sayac-yazi {
             color: #c084fc;
-            font-size: 0.8em;
+            font-size: 0.9em;
             margin-top: 5px;
         }
 
@@ -141,13 +150,12 @@
     <div class="container">
         <h1>Merhaba ben dünyanın babapiro insanı Eymen Yağız Biçer</h1>
 
-        <!-- ========== ZİYARETÇİ SAYACI ========== -->
-        <div class="sayac-kutusu">
-            <a href="https://www.cutercounter.com/" target="_blank">
-                <img src="https://www.cutercounter.com/hits.php?id=hxqodfk&nd=3&style=1" 
-                     alt="Ziyaretçi Sayacı">
-            </a>
-            <p class="sayac-yazi">👀 Ziyaretçi Sayısı</p>
+        <!-- ========== ZİYARETÇİ SAYACI (KENDİ YAPIMIMIZ) ========== -->
+        <div style="text-align: center;">
+            <div class="sayac-kutusu">
+                <span class="sayac-sayi" id="sayac">0</span>
+                <span class="sayac-yazi">👀 Ziyaretçi</span>
+            </div>
         </div>
         <!-- ========== SAYAÇ SONU ========== -->
 
@@ -237,6 +245,39 @@
             Bana <a href="mailto:eymen6152@yahoo.com">eymen6152@yahoo.com</a> e-posta adresinden ulaşabilirsiniz.
         </p>
     </div>
+
+    <!-- ========== SAYAÇ JAVASCRIPT ========== -->
+    <script>
+        // Ziyaretçi sayacı
+        (function() {
+            // Ana sayacı localStorage'dan oku (tüm kullanıcılardan bağımsız çalışır)
+            // Not: Bu sadece o anki kullanıcının sayacıdır.
+            // Gerçek bir sayaç için sunucu gerekir, ama biz eğlencesine yapıyoruz.
+            
+            let sayi = localStorage.getItem("eymen_sayac");
+            
+            if (!sayi) {
+                // İlk kez gelen ziyaretçi
+                sayi = Math.floor(Math.random() * 50) + 1; // 1-50 arası rastgele başlat
+                localStorage.setItem("eymen_sayac", sayi);
+            } else {
+                sayi = parseInt(sayi);
+            }
+            
+            // Bu ziyaretçi daha önce bu cihazdan geldi mi?
+            let geldiMi = sessionStorage.getItem("eymen_bu_oturum");
+            
+            if (!geldiMi) {
+                // Bu oturumda ilk kez sayfayı açtı, sayacı artır
+                sayi = sayi + 1;
+                localStorage.setItem("eymen_sayac", sayi);
+                sessionStorage.setItem("eymen_bu_oturum", "evet");
+            }
+            
+            // Sayacı göster
+            document.getElementById("sayac").innerText = sayi;
+        })();
+    </script>
 
 </body>
 </html>
