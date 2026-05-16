@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✂️ Taş Kağıt Makas - Eymen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            display:flex;justify-content:center;align-items:center;
+            height:100vh;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            flex-direction:column;color:#e0e0e0;user-select:none;
+        }
+        h1{color:#ffd700;text-shadow:0 0 10px gold;margin-bottom:10px;}
+        .skor-tablo{
+            display:flex;gap:30px;margin-bottom:20px;font-size:1.2em;
+        }
+        .skor-kutu{
+            background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            border-radius:12px;padding:10px 20px;text-align:center;
+        }
+        .skor-isim{color:#c084fc;font-size:0.9em;}
+        .skor-puan{color:#ffd700;font-size:2em;font-weight:bold;}
+        .oyun-alani{
+            display:flex;gap:40px;align-items:center;margin:20px 0;
+        }
+        .secim-kutu{
+            text-align:center;
+        }
+        .secim-gorsel{
+            font-size:5em;display:block;min-height:100px;
+        }
+        .secim-yazi{color:#c084fc;margin-top:5px;}
+        .vs{color:#ffd700;font-size:2em;font-weight:bold;}
+        .butonlar{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin:20px 0;}
+        .butonlar button{
+            font-size:3em;background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            border-radius:15px;padding:15px 20px;cursor:pointer;transition:0.3s;
+        }
+        .butonlar button:hover{transform:scale(1.1);border-color:#ffd700;box-shadow:0 0 20px gold;}
+        .butonlar button:active{transform:scale(0.95);}
+        .sonuc{color:#ffd700;font-size:1.5em;margin-top:10px;min-height:40px;text-align:center;}
+        .sifirla{
+            background:#c084fc;color:#000;border:none;padding:10px 25px;
+            font-size:1em;border-radius:8px;cursor:pointer;font-weight:bold;
+            margin-top:15px;transition:0.3s;
+        }
+        .sifirla:hover{background:#ffd700;box-shadow:0 0 15px gold;}
+        p{color:#aaa;font-size:0.8em;margin-top:10px;}
+    </style>
+</head>
+<body>
+    <h1>✂️ Taş Kağıt Makas</h1>
+    <p style="color:#c084fc;">İlk 5 puanı alan kazanır!</p>
+    
+    <div class="skor-tablo">
+        <div class="skor-kutu">
+            <span class="skor-isim">👤 SEN</span>
+            <span class="skor-puan" id="senSkor">0</span>
+        </div>
+        <div class="skor-kutu">
+            <span class="skor-isim">🤖 PC</span>
+            <span class="skor-puan" id="pcSkor">0</span>
+        </div>
+    </div>
+
+    <div class="oyun-alani">
+        <div class="secim-kutu">
+            <span class="secim-gorsel" id="senSecim">❓</span>
+            <span class="secim-yazi">Sen</span>
+        </div>
+        <span class="vs">VS</span>
+        <div class="secim-kutu">
+            <span class="secim-gorsel" id="pcSecim">❓</span>
+            <span class="secim-yazi">Bilgisayar</span>
+        </div>
+    </div>
+
+    <div class="butonlar">
+        <button onclick="oyna('tas')" title="Taş">🪨</button>
+        <button onclick="oyna('kagit')" title="Kağıt">📄</button>
+        <button onclick="oyna('makas')" title="Makas">✂️</button>
+    </div>
+
+    <div class="sonuc" id="sonuc"></div>
+    <button class="sifirla" onclick="sifirla()">🔄 Sıfırla</button>
+    <p>Birini seç, bilgisayarı yen!</p>
+
+    <script>
+        let senPuan = 0, pcPuan = 0, oyunBitti = false;
+        const emojiler = { tas: "🪨", kagit: "📄", makas: "✂️" };
+
+        function oyna(seninSecimin) {
+            if (oyunBitti) return;
+            
+            const secenekler = ["tas", "kagit", "makas"];
+            const pcSecimi = secenekler[Math.floor(Math.random() * 3)];
+            
+            document.getElementById("senSecim").innerText = emojiler[seninSecimin];
+            document.getElementById("pcSecim").innerText = emojiler[pcSecimi];
+            
+            let sonuc = "";
+            
+            if (seninSecimin === pcSecimi) {
+                sonuc = "🤝 Berabere!";
+            } else if (
+                (seninSecimin === "tas" && pcSecimi === "makas") ||
+                (seninSecimin === "kagit" && pcSecimi === "tas") ||
+                (seninSecimin === "makas" && pcSecimi === "kagit")
+            ) {
+                sonuc = "✅ Sen kazandın bu turu!";
+                senPuan++;
+            } else {
+                sonuc = "❌ Bilgisayar kazandı bu turu!";
+                pcPuan++;
+            }
+            
+            document.getElementById("senSkor").innerText = senPuan;
+            document.getElementById("pcSkor").innerText = pcPuan;
+            
+            // Kazanan kontrolü
+            if (senPuan === 5) {
+                sonuc = "🎉 TEBRİKLER! OYUNU SEN KAZANDIN! 🎉";
+                oyunBitti = true;
+            } else if (pcPuan === 5) {
+                sonuc = "😢 Bilgisayar kazandı. Tekrar dene!";
+                oyunBitti = true;
+            }
+            
+            document.getElementById("sonuc").innerText = sonuc;
+        }
+
+        function sifirla() {
+            senPuan = 0; pcPuan = 0; oyunBitti = false;
+            document.getElementById("senSkor").innerText = "0";
+            document.getElementById("pcSkor").innerText = "0";
+            document.getElementById("senSecim").innerText = "❓";
+            document.getElementById("pcSecim").innerText = "❓";
+            document.getElementById("sonuc").innerText = "";
+        }
+    </script>
+</body>
+</html>
