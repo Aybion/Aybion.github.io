@@ -4,20 +4,48 @@
     <meta charset="UTF-8">
     <title>Beyler Bağış Atın da Cajun Corner Yiyek</title>
     <style>
+        /* ========== KARANLIK MOD (VARSAYILAN) ========== */
+        :root {
+            --bg: linear-gradient(135deg, #0d0d0d, #1a0033, #0d0d0d);
+            --container-bg: rgba(0, 0, 0, 0.7);
+            --text: #e0e0e0;
+            --baslik: #ffd700;
+            --alt-baslik: #c084fc;
+            --link: #60a5fa;
+            --kart-bg: rgba(30, 10, 60, 0.8);
+            --input-bg: rgba(255,255,255,0.08);
+            --sayac-bg: rgba(30, 10, 60, 0.6);
+        }
+
+        /* ========== AYDINLIK MOD ========== */
+        body.aydinlik {
+            --bg: linear-gradient(135deg, #f0f0f0, #e0d5ff, #f0f0f0);
+            --container-bg: rgba(255, 255, 255, 0.85);
+            --text: #1a1a1a;
+            --baslik: #7c3aed;
+            --alt-baslik: #5b21b6;
+            --link: #2563eb;
+            --kart-bg: rgba(255, 255, 255, 0.9);
+            --input-bg: rgba(0,0,0,0.05);
+            --sayac-bg: rgba(255, 255, 255, 0.8);
+        }
+
         body {
-            background: linear-gradient(135deg, #0d0d0d, #1a0033, #0d0d0d);
-            color: #e0e0e0;
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
+            transition: all 0.5s ease;
         }
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: rgba(0, 0, 0, 0.7);
+            background: var(--container-bg);
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 0 30px rgba(128, 0, 255, 0.3);
+            transition: all 0.5s ease;
         }
         img {
             display: block;
@@ -27,20 +55,23 @@
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
         h1 {
-            color: #ffd700;
+            color: var(--baslik);
             text-align: center;
             font-size: 2.5em;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            transition: color 0.5s;
         }
         h2 {
-            color: #c084fc;
-            border-bottom: 2px solid #c084fc;
+            color: var(--alt-baslik);
+            border-bottom: 2px solid var(--alt-baslik);
             padding-bottom: 5px;
             margin-top: 30px;
+            transition: color 0.5s;
         }
         a {
-            color: #60a5fa;
+            color: var(--link);
             text-decoration: none;
+            transition: color 0.5s;
         }
         a:hover {
             color: #ffd700;
@@ -56,26 +87,52 @@
         p {
             line-height: 1.6;
         }
+
+        /* ========== TEMA BUTONU ========== */
+        .tema-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--kart-bg);
+            border: 2px solid var(--alt-baslik);
+            color: var(--baslik);
+            font-size: 1.5em;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tema-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px gold;
+        }
+
         .sayac-kutusu {
             text-align: center;
             margin: 20px 0;
-            background: rgba(30, 10, 60, 0.6);
-            border: 2px solid #c084fc;
+            background: var(--sayac-bg);
+            border: 2px solid var(--alt-baslik);
             border-radius: 15px;
             padding: 15px;
             display: inline-block;
             min-width: 180px;
             box-shadow: 0 0 15px rgba(192, 132, 252, 0.4);
+            transition: all 0.5s;
         }
         .sayac-sayi {
             font-size: 3em;
             font-weight: bold;
-            color: #ffd700;
+            color: var(--baslik);
             text-shadow: 0 0 10px gold;
             display: block;
         }
         .sayac-yazi {
-            color: #c084fc;
+            color: var(--alt-baslik);
             font-size: 0.9em;
             margin-top: 5px;
         }
@@ -87,8 +144,8 @@
             margin-top: 20px;
         }
         .oyun-kart {
-            background: rgba(30, 10, 60, 0.8);
-            border: 2px solid #c084fc;
+            background: var(--kart-bg);
+            border: 2px solid var(--alt-baslik);
             border-radius: 15px;
             padding: 20px;
             width: 220px;
@@ -107,17 +164,17 @@
             margin-bottom: 10px;
         }
         .oyun-kart h3 {
-            color: #ffd700;
+            color: var(--baslik);
             margin: 10px 0;
             font-size: 1.5em;
         }
         .oyun-kart p {
             font-size: 0.9em;
             margin: 5px 0;
-            color: #e0e0e0;
+            color: var(--text);
         }
         .oyun-kart strong {
-            color: #ffd700;
+            color: var(--baslik);
             font-weight: bold;
         }
         .oyun-butonlari {
@@ -173,14 +230,15 @@
         }
         .form-kutu input,
         .form-kutu textarea {
-            background: rgba(255,255,255,0.08);
-            border: 2px solid #c084fc;
+            background: var(--input-bg);
+            border: 2px solid var(--alt-baslik);
             border-radius: 12px;
             padding: 14px;
-            color: #fff;
+            color: var(--text);
             font-size: 1em;
             width: 100%;
             box-sizing: border-box;
+            transition: all 0.5s;
         }
         .form-btn {
             background: linear-gradient(45deg, #c084fc, #ffd700);
@@ -201,8 +259,11 @@
 </head>
 <body>
 
+    <!-- ========== TEMA BUTONU ========== -->
+    <button class="tema-btn" id="temaBtn" onclick="temaDegistir()" title="Karanlık/Aydınlık Mod">🌙</button>
+
     <div class="container">
-        <h1>Test 1.0</h1>
+        <h1>Merhaba ben dünyanın babapiro insanı Eymen Yağız Biçer</h1>
 
         <div style="text-align: center;">
             <div class="sayac-kutusu">
@@ -290,17 +351,18 @@
                 <input type="radio" name="yildiz" id="y1" value="1⭐">
                 <label for="y1">⭐</label>
             </div>
-            <p style="text-align:center; color: #c084fc; font-size:0.9em;">Tıkla, puan ver!</p>
+            <p style="text-align:center; color: var(--alt-baslik); font-size:0.9em;">Tıkla, puan ver!</p>
             <div class="form-kutu" style="display:flex; flex-direction:column; gap:12px;">
                 <input type="text" name="isim" placeholder="Adın (istersen boş bırak)">
                 <textarea name="yorum" placeholder="Yorumun..." rows="3" required></textarea>
                 <button type="submit" class="form-btn">⭐ Gönder</button>
             </div>
         </form>
-        <p id="form-mesaj" style="text-align:center; margin-top:10px; color:#ffd700; min-height:24px;"></p>
+        <p id="form-mesaj" style="text-align:center; margin-top:10px; color:var(--baslik); min-height:24px;"></p>
     </div>
 
     <script>
+        // ========== SAYAÇ ==========
         (function() {
             let sayi = localStorage.getItem("eymen_sayac");
             if (!sayi) {
@@ -317,9 +379,35 @@
             }
             document.getElementById("sayac").innerText = sayi;
         })();
-    </script>
 
-    <script>
+        // ========== TEMA ==========
+        function temaDegistir() {
+            const body = document.body;
+            const btn = document.getElementById("temaBtn");
+            body.classList.toggle("aydinlik");
+            
+            if (body.classList.contains("aydinlik")) {
+                btn.innerText = "☀️";
+                localStorage.setItem("eymen_tema", "aydinlik");
+            } else {
+                btn.innerText = "🌙";
+                localStorage.setItem("eymen_tema", "karanlik");
+            }
+        }
+
+        // Sayfa yüklenince kayıtlı temayı uygula
+        (function() {
+            const kayitliTema = localStorage.getItem("eymen_tema");
+            const btn = document.getElementById("temaBtn");
+            if (kayitliTema === "aydinlik") {
+                document.body.classList.add("aydinlik");
+                btn.innerText = "☀️";
+            } else {
+                btn.innerText = "🌙";
+            }
+        })();
+
+        // ========== FORMSPREE ==========
         document.getElementById("degerlendirmeForm").addEventListener("submit", async function(e) {
             e.preventDefault();
             const mesaj = document.getElementById("form-mesaj");
