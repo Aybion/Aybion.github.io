@@ -76,7 +76,6 @@
             border-radius: 15px;
             padding: 15px;
             display: inline-block;
-            width: auto;
             min-width: 180px;
             box-shadow: 0 0 15px rgba(192, 132, 252, 0.4);
         }
@@ -175,12 +174,67 @@
         .oyun-buton-2048 {
             background: linear-gradient(45deg, #f2b179, #ffd700);
         }
+
+        /* ========== DEĞERLENDİRME ========== */
+        .yildiz-secim {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            font-size: 2.5em;
+        }
+
+        .yildiz-secim input {
+            display: none;
+        }
+
+        .yildiz-secim label {
+            color: #555;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .yildiz-secim input:checked ~ label,
+        .yildiz-secim label:hover,
+        .yildiz-secim label:hover ~ label {
+            color: #ffd700;
+            text-shadow: 0 0 10px gold;
+            transform: scale(1.2);
+        }
+
+        .form-kutu input,
+        .form-kutu textarea {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid #c084fc;
+            border-radius: 12px;
+            padding: 14px;
+            color: #fff;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-btn {
+            background: linear-gradient(45deg, #c084fc, #ffd700);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .form-btn:hover {
+            box-shadow: 0 0 20px gold;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Test 1.0</h1>
+        <h1>test</h1>
 
         <!-- ========== ZİYARETÇİ SAYACI ========== -->
         <div style="text-align: center;">
@@ -189,7 +243,6 @@
                 <span class="sayac-yazi">👀 Ziyaretçi</span>
             </div>
         </div>
-        <!-- ========== SAYAÇ SONU ========== -->
 
         <img src="ben.jpg" alt="Benim fotoğrafım" width="200">
 
@@ -213,21 +266,18 @@
         <!-- ========== OYUNLARIM BÖLÜMÜ ========== -->
         <h2>🎮 Oyunlarım & Hesaplarım</h2>
         <div class="oyun-kartlari">
-
             <div class="oyun-kart">
                 <span class="oyun-ikon">🔫</span>
                 <h3>Valorant</h3>
                 <p>Riot ID: <strong>Kendrick Lamar#Eymen</strong></p>
                 <p>VCT26 X Fut Classic & Kaosun Başlangıcı Vandal</p>
             </div>
-
             <div class="oyun-kart">
                 <span class="oyun-ikon">🚗</span>
                 <h3>Rocket League</h3>
                 <p>Epic ID: <strong>Aybion</strong></p>
                 <p>Efsane araçlar, skinler, gol sevinçleri</p>
             </div>
-
             <div class="oyun-kart">
                 <span class="oyun-ikon">⭐</span>
                 <h3>Brawl Stars</h3>
@@ -235,45 +285,61 @@
                 <p>🏆 64.522 Kupa | Kulüp: ~|IMPARATORS|~</p>
                 <p>102/102 Karakter | 19 Prestij</p>
             </div>
-
             <div class="oyun-kart">
                 <span class="oyun-ikon">🎲</span>
                 <h3>Steam</h3>
                 <p>325 Oyun</p>
                 <p>Arkadaş Kodum: <strong>1507440683</strong></p>
             </div>
-
             <div class="oyun-kart">
                 <span class="oyun-ikon">🎁</span>
                 <h3>Epic Games</h3>
                 <p>245 Oyun</p>
                 <p>ID: <strong>Aybion</strong></p>
             </div>
-
         </div>
-        <!-- ========== OYUNLARIM BÖLÜMÜ SONU ========== -->
-        
+
         <!-- ========== SİTEDEKİ OYUNLAR ========== -->
         <h2>🕹️ Eymen'in Oyunları</h2>
         <p>Aşağıdaki butonlara tıklayarak hemen oynayabilirsin:</p>
         <div class="oyun-butonlari">
-            <a href="oyun.html" class="oyun-buton">
-                🐍 Yılan Oyunu
-            </a>
-            <a href="2048.html" class="oyun-buton oyun-buton-2048">
-                🔢 2048
-            </a>
+            <a href="oyun.html" class="oyun-buton">🐍 Yılan Oyunu</a>
+            <a href="2048.html" class="oyun-buton oyun-buton-2048">🔢 2048</a>
         </div>
-        <!-- ========== OYUNLAR SONU ========== -->
 
         <h2>İletişim</h2>
-        <p>
-            Bana <a href="mailto:eymen6152@yahoo.com">eymen6152@yahoo.com</a> e-posta adresinden ulaşabilirsiniz.
-        </p>
+        <p>Bana <a href="mailto:eymen6152@yahoo.com">eymen6152@yahoo.com</a> adresinden ulaşabilirsiniz.</p>
+
+        <!-- ========== DEĞERLENDİRME BÖLÜMÜ ========== -->
+        <h2>⭐ Siteyi Değerlendir</h2>
+        <form id="degerlendirmeForm" style="max-width: 500px; margin: 0 auto;">
+            <!-- Yıldız -->
+            <div class="yildiz-secim">
+                <input type="radio" name="yildiz" id="y5" value="5⭐">
+                <label for="y5">⭐</label>
+                <input type="radio" name="yildiz" id="y4" value="4⭐">
+                <label for="y4">⭐</label>
+                <input type="radio" name="yildiz" id="y3" value="3⭐">
+                <label for="y3">⭐</label>
+                <input type="radio" name="yildiz" id="y2" value="2⭐">
+                <label for="y2">⭐</label>
+                <input type="radio" name="yildiz" id="y1" value="1⭐">
+                <label for="y1">⭐</label>
+            </div>
+            <p style="text-align:center; color: #c084fc; font-size:0.9em;">Tıkla, puan ver!</p>
+
+            <div class="form-kutu" style="display:flex; flex-direction:column; gap:12px;">
+                <input type="text" name="isim" placeholder="Adın (istersen boş bırak)">
+                <textarea name="yorum" placeholder="Yorumun..." rows="3" required></textarea>
+                <button type="submit" class="form-btn">⭐ Gönder</button>
+            </div>
+        </form>
+        <p id="form-mesaj" style="text-align:center; margin-top:10px; color:#ffd700; min-height:24px;"></p>
+        <!-- ========== DEĞERLENDİRME SONU ========== -->
 
     </div>
 
-    <!-- ========== SAYAÇ JAVASCRIPT ========== -->
+    <!-- ========== SAYAÇ ========== -->
     <script>
         (function() {
             let sayi = localStorage.getItem("eymen_sayac");
@@ -285,12 +351,59 @@
             }
             let geldiMi = sessionStorage.getItem("eymen_bu_oturum");
             if (!geldiMi) {
-                sayi = sayi + 1;
+                sayi++;
                 localStorage.setItem("eymen_sayac", sayi);
                 sessionStorage.setItem("eymen_bu_oturum", "evet");
             }
             document.getElementById("sayac").innerText = sayi;
         })();
+    </script>
+
+    <!-- ========== FORMSPREE ========== -->
+    <script>
+        document.getElementById("degerlendirmeForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const mesaj = document.getElementById("form-mesaj");
+            const yildizInput = document.querySelector('input[name="yildiz"]:checked');
+            if (!yildizInput) {
+                mesaj.innerText = "❌ Lütfen yıldız seç!";
+                mesaj.style.color = "#ff6b6b";
+                return;
+            }
+            const yorum = this.querySelector('textarea[name="yorum"]').value.trim();
+            if (!yorum) {
+                mesaj.innerText = "❌ Lütfen yorum yaz!";
+                mesaj.style.color = "#ff6b6b";
+                return;
+            }
+            const isim = this.querySelector('input[name="isim"]').value.trim() || "İsimsiz";
+
+            const data = {
+                Yildiz: yildizInput.value,
+                Isim: isim,
+                Yorum: yorum
+            };
+
+            try {
+                const response = await fetch("https://formspree.io/f/mbdwnnde", {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "Content-Type": "application/json" }
+                });
+                if (response.ok) {
+                    mesaj.innerText = "✅ Gönderildi! Teşekkürler.";
+                    mesaj.style.color = "#ffd700";
+                    this.reset();
+                } else {
+                    mesaj.innerText = "❌ Hata oluştu.";
+                    mesaj.style.color = "#ff6b6b";
+                }
+            } catch {
+                mesaj.innerText = "❌ Bağlantı hatası.";
+                mesaj.style.color = "#ff6b6b";
+            }
+            setTimeout(() => mesaj.innerText = "", 4000);
+        });
     </script>
 
 </body>
