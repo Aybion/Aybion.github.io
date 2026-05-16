@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>💣 Mayın Tarlası - Eymen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            display:flex;justify-content:center;align-items:center;
+            height:100vh;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            flex-direction:column;user-select:none;color:#e0e0e0;
+        }
+        h1{color:#ffd700;text-shadow:0 0 10px gold;margin-bottom:10px;}
+        .ust-bilgi{
+            display:flex;justify-content:space-between;align-items:center;
+            width:300px;margin-bottom:10px;
+        }
+        .bilgi-kutu{
+            background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            border-radius:10px;padding:8px 15px;text-align:center;
+            color:#ffd700;font-weight:bold;font-size:1.2em;
+        }
+        .oyun-alani{
+            display:grid;grid-template-columns:repeat(10,30px);
+            grid-template-rows:repeat(10,30px);gap:2px;
+            background:rgba(0,0,0,0.6);padding:10px;border-radius:15px;
+            border:3px solid #c084fc;box-shadow:0 0 20px rgba(192,132,252,0.4);
+        }
+        .hucre{
+            width:30px;height:30px;background:rgba(255,255,255,0.08);
+            border-radius:4px;display:flex;align-items:center;
+            justify-content:center;font-weight:bold;font-size:0.9em;
+            cursor:pointer;transition:0.1s;
+        }
+        .hucre.acik{background:rgba(0,0,0,0.4);cursor:default;}
+        .hucre.mayin{background:#ff4444;}
+        .hucre.bayrak{background:rgba(255,215,0,0.3);}
+        button{
+            background:#c084fc;color:#000;border:none;padding:10px 25px;
+            font-size:1.1em;border-radius:8px;cursor:pointer;font-weight:bold;
+            margin-top:15px;transition:0.3s;
+        }
+        button:hover{background:#ffd700;box-shadow:0 0 15px gold;}
+        .mesaj{color:#ffd700;font-size:1.2em;margin-top:10px;height:30px;}
+        p{color:#aaa;font-size:0.8em;margin-top:5px;}
+    </style>
+</head>
+<body>
+    <h1>💣 Mayın Tarlası</h1>
+    <div class="ust-bilgi">
+        <div class="bilgi-kutu">💣 <span id="mayinSayisi">15</span></div>
+        <div class="bilgi-kutu">⏱️ <span id="zaman">0</span></div>
+    </div>
+    <div class="oyun-alani" id="oyunAlani"></div>
+    <button onclick="yeniOyun()">🔄 Yeni Oyun</button>
+    <div class="mesaj" id="mesaj"></div>
+    <p>Sol tık: Aç | Sağ tık: Bayrak | Telefon: Kısa/Uzun dokun</p>
+
+    <script>
+        const BOYUT = 10, MAYIN_SAYISI = 15;
+        let tahta = [], aciklar = [], bayraklar = [], oyunBitti = false, zaman = 0, timer = null;
+        const mayinText = document.getElementById("mayinSayisi"), zamanText = document.getElementById("zaman"), mesaj = document.getElementById("mesaj");
+
+        function yeniOyun(){
+            tahta = Array(BOYUT*BOYUT).fill(0); aciklar = Array(BOYUT*BOYUT).fill(false);
+            bayraklar = Array(BOYUT*BOYUT).fill(false); oyunBitti = false; zaman = 0;
+            mesaj.innerText = ""; mayinText.innerText = MAYIN_SAYISI; zamanText.innerText = "0";
+            if(timer)clearInterval(timer); timer = null;
+            
+            // Mayın yerleştir
+            let mayinlar = 0;
+            while(mayinlar < MAYIN_SAYISI){
+                let r = Math.floor(Math.random()*(BOYUT*BOYUT));
+                if(tahta[r] !== -1){ tahta[r] = -1; mayinlar++; }
+            }
+            // Sayıları hesapla
+            for(let i=0;i<BOYUT*BOYUT;i++){
+                if(tahta[i]===-1)continue;
+                let sayi=0;
+                const komsu = komsulariGetir(i);
+                for(let k of komsu) if(tahta[k]===-1) sayi++;
+                tahta[i]=sayi;
+            }
+            tahtayiCiz();
+        }
+
+        function komsulariGetir(index){
+            const satir=Math.floor(index/BOYUT), sutun=index%BOYUT;
+            const komsular=[];
+            for(let r=-1;r<=1;r++){
+                for(let c=-1;c<=1;c++){
+                    if(r===0&&c===0)continue;
+                    let yeniSatir=satir+r, yeniSutun=sutun+c;
+                    if(yeniSatir>=0&&yeniSatir<BOYUT&&yeniSutun>=0&&yeniSutun<BOYUT){
+                        komsular.push(yeniSatir*BOYUT+yeniSutun);
+                    }
+                }
+            }
+            return komsular;
+        }
+
+        function hucreAc(index){
+            if(oyunBitti || aciklar[index] || bayraklar[index]) return;
+            if(!timer){ timer = setInterval(()=>{zaman++;zamanText.innerText=zaman;},1000); }
+            aciklar[index]=true;
+            if(tahta[index]===-1){
+                oyunBitti=true; mesaj.innerText="💥 Mayına Bastın!";
+                if(timer)clearInterval(timer);
+                tumMayinlariGoster();
+            }else if(tahta[index]===0){
+                const komsu=komsulariGetir(index);
+                for(let k of komsu) hucreAc(k);
+            }
+            kazanmaKontrol();
+            tahtayiCiz();
+        }
+
+        function bayrakKoy(index){
+            if(oyunBitti || aciklar[index]) return;
+            bayraklar[index] = !bayraklar[index];
+            let kalan = MAYIN_SAYISI;
+            for(let b of bayraklar) if(b) kalan--;
+            mayinText.innerText = kalan;
+            tahtayiCiz();
+        }
+
+        function kazanmaKontrol(){
+            let acilanSayisi = 0;
+            for(let a of aciklar) if(a) acilanSayisi++;
+            if(acilanSayisi === BOYUT*BOYUT - MAYIN_SAYISI){
+                oyunBitti=true; mesaj.innerText="🎉 Kazandın!";
+                if(timer)clearInterval(timer);
+            }
+        }
+
+        function tumMayinlariGoster(){
+            for(let i=0;i<BOYUT*BOYUT;i++) if(tahta[i]===-1) aciklar[i]=true;
+            tahtayiCiz();
+        }
+
+        function tahtayiCiz(){
+            const alan = document.getElementById("oyunAlani");
+            alan.innerHTML = "";
+            for(let i=0;i<BOYUT*BOYUT;i++){
+                const h = document.createElement("div");
+                h.classList.add("hucre");
+                h.setAttribute("data-index", i);
+                if(aciklar[i]){
+                    h.classList.add("acik");
+                    if(tahta[i]===-1){ h.classList.add("mayin"); h.innerText="💣"; }
+                    else if(tahta[i]>0){ h.innerText=tahta[i]; h.style.color=renkGetir(tahta[i]); }
+                }else if(bayraklar[i]){
+                    h.classList.add("bayrak"); h.innerText="🚩";
+                }
+                h.addEventListener("click",(e)=>hucreAc(i));
+                h.addEventListener("contextmenu",(e)=>{e.preventDefault();bayrakKoy(i);});
+                // Mobil uzun dokunma
+                let uzunBasma;
+                h.addEventListener("touchstart",()=>{uzunBasma=setTimeout(()=>bayrakKoy(i),500);});
+                h.addEventListener("touchend",()=>clearTimeout(uzunBasma));
+                h.addEventListener("touchmove",()=>clearTimeout(uzunBasma));
+                alan.appendChild(h);
+            }
+        }
+
+        function renkGetir(n){
+            const renkler = ["","#60a5fa","#4ade80","#f87171","#a78bfa","#fbbf24","#fb923c","#e0e0e0","#9ca3af"];
+            return renkler[n] || "#fff";
+        }
+
+        yeniOyun();
+    </script>
+</body>
+</html>
