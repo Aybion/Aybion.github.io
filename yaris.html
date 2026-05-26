@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🏎️ Yarış Oyunu - Eymen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            display:flex;justify-content:center;align-items:center;
+            height:100vh;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            flex-direction:column;color:#e0e0e0;user-select:none;overflow:hidden;
+        }
+        h1{color:#ffd700;text-shadow:0 0 10px gold;margin-bottom:5px;font-size:1.8em;}
+        .ust-bilgi{
+            display:flex;gap:30px;margin-bottom:10px;font-size:1.1em;
+        }
+        .skor{color:#ffd700;font-weight:bold;}
+        .eniyi{color:#c084fc;}
+        canvas{
+            border:3px solid #c084fc;border-radius:15px;
+            box-shadow:0 0 20px rgba(192,132,252,0.4);
+            background:#111;display:block;
+        }
+        button{
+            background:#c084fc;color:#000;border:none;padding:10px 25px;
+            font-size:1.1em;border-radius:8px;cursor:pointer;font-weight:bold;
+            margin-top:15px;transition:0.3s;
+        }
+        button:hover{background:#ffd700;box-shadow:0 0 15px gold;}
+        p{color:#aaa;font-size:0.8em;margin-top:5px;}
+    </style>
+</head>
+<body>
+    <h1>🏎️ Yarış Oyunu</h1>
+    <div class="ust-bilgi">
+        <span>🏆 Skor: <span class="skor" id="skor">0</span></span>
+        <span>👑 En İyi: <span class="eniyi" id="eniyi">0</span></span>
+    </div>
+    <canvas id="oyunCanvas" width="400" height="600"></canvas>
+    <button onclick="oyunuBaslat()">🔄 Yeniden Başla</button>
+    <p>Ok tuşları / Parmak kaydırma | Altınları topla, arabalardan kaç!</p>
+
+    <script>
+        const canvas = document.getElementById("oyunCanvas");
+        const ctx = canvas.getContext("2d");
+        const skorText = document.getElementById("skor");
+        const eniyiText = document.getElementById("eniyi");
+
+        // Araba
+        let araba = { x: 175, y: 480, genislik: 50, yukseklik: 80 };
+
+        // Rakipler ve altınlar
+        let rakipler = [];
+        let altinlar = [];
+        let skor = 0;
+        let enIyiSkor = 0;
+        let oyunBitti = false;
+        let oyunDongusu;
+        let hiz = 3;
+        let sayac = 0;
+
+        // En iyi skoru yükle
+        if (localStorage.getItem("yarisEnIyi")) {
+            enIyiSkor = parseInt(localStorage.getItem("yarisEnIyi"));
+        }
+        eniyiText.innerText = enIyiSkor;
+
+        // Klavye
+        let solBasili = false;
+        let sagBasili = false;
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") { e.preventDefault(); solBasili = true; }
+            if (e.key === "ArrowRight") { e.preventDefault(); sagBasili = true; }
+        });
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "ArrowLeft") { e.preventDefault(); solBasili = false; }
+            if (e.key === "ArrowRight") { e.preventDefault(); sagBasili = false; }
+        });
+
+        // Dokunmatik
+        let dokunmaX = null;
+        canvas.addEventListener("touchstart", (e) => {
+            dokunmaX = e.touches[0].clientX;
+        });
+        canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            if (dokunmaX !== null) {
+                let fark = e.touches[0].clientX - dokunmaX;
+                araba.x += fark;
+                if (araba.x < 0) araba.x = 0;
+                if (araba.x > canvas.width - araba.genislik) araba.x = canvas.width - araba.genislik;
+                dokunmaX = e.touches[0].clientX;
+            }
+        });
+        canvas.addEventListener("touchend", () => { dokunmaX = null; });
+
+        function arabaCiz() {
+            // Araba gövdesi
+            ctx.fillStyle = "#ff4444";
+            ctx.fillRect(araba.x + 5, araba.y + 10, 40, 60);
+            
+            // Araba tavanı
+            ctx.fillStyle = "#cc0000";
+            ctx.fillRect(araba.x + 10, araba.y + 15, 30, 30);
+            
+            // Cam
+            ctx.fillStyle = "#60a5fa";
+            ctx.fillRect(araba.x + 12, araba.y + 18, 12, 15);
+            ctx.fillRect(araba.x + 26, araba.y + 18, 12, 15);
+            
+            // Tekerlekler
+            ctx.fillStyle = "#111";
+            ctx.fillRect(araba.x, araba.y + 15, 8, 18);
+            ctx.fillRect(araba.x + 42, araba.y + 15, 8, 18);
+            ctx.fillRect(araba.x, araba.y + 48, 8, 18);
+            ctx.fillRect(araba.x + 42, araba.y + 48, 8, 18);
+            
+            // Far
+            ctx.fillStyle = "#ffd700";
+            ctx.fillRect(araba.x + 10, araba.y + 5, 8, 8);
+            ctx.fillRect(araba.x + 32, araba.y + 5, 8, 8);
+        }
+
+        function rakipCiz(rakip) {
+            ctx.fillStyle = "#4ade80";
+            ctx.fillRect(rakip.x + 5, rakip.y + 10, 40, 60);
+            ctx.fillStyle = "#22c55e";
+            ctx.fillRect(rakip.x + 10, rakip.y + 15, 30, 30);
+            ctx.fillStyle = "#60a5fa";
+            ctx.fillRect(rakip.x + 12, rakip.y + 18, 12, 15);
+            ctx.fillRect(rakip.x + 26, rakip.y + 18, 12, 15);
+            ctx.fillStyle = "#111";
+            ctx.fillRect(rakip.x, rakip.y + 15, 8, 18);
+            ctx.fillRect(rakip.x + 42, rakip.y + 15, 8, 18);
+            ctx.fillRect(rakip.x, rakip.y + 48, 8, 18);
+            ctx.fillRect(rakip.x + 42, rakip.y + 48, 8, 18);
+            ctx.fillStyle = "#ff4444";
+            ctx.fillRect(rakip.x + 10, rakip.y + 65, 8, 8);
+            ctx.fillRect(rakip.x + 32, rakip.y + 65, 8, 8);
+        }
+
+        function altinCiz(altin) {
+            ctx.fillStyle = "#ffd700";
+            ctx.beginPath();
+            ctx.arc(altin.x + 10, altin.y + 10, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.font = "12px Arial";
+            ctx.fillText("💰", altin.x, altin.y + 14);
+        }
+
+        function yolCizgisiCiz() {
+            ctx.fillStyle = "#fff";
+            for (let i = 0; i < canvas.height; i += 50) {
+                ctx.fillRect(197, (i + sayac) % 50, 6, 25);
+            }
+        }
+
+        function carpismaKontrol(a, b) {
+            return a.x < b.x + b.genislik &&
+                   a.x + a.genislik > b.x &&
+                   a.y < b.y + b.yukseklik &&
+                   a.y + a.yukseklik > b.y;
+        }
+
+        function oyunuBaslat() {
+            araba = { x: 175, y: 480, genislik: 50, yukseklik: 80 };
+            rakipler = [];
+            altinlar = [];
+            skor = 0;
+            oyunBitti = false;
+            hiz = 3;
+            sayac = 0;
+            solBasili = false;
+            sagBasili = false;
+            skorText.innerText = "0";
+            if (oyunDongusu) clearInterval(oyunDongusu);
+            oyunDongusu = setInterval(oyunAdimi, 20);
+        }
+
+        function oyunAdimi() {
+            if (oyunBitti) return;
+
+            // Hareket
+            if (solBasili) {
+                araba.x -= 5;
+                if (araba.x < 0) araba.x = 0;
+            }
+            if (sagBasili) {
+                araba.x += 5;
+                if (araba.x > canvas.width - araba.genislik) araba.x = canvas.width - araba.genislik;
+            }
+
+            sayac += hiz;
+            if (sayac > 50) sayac = 0;
+
+            // Skor artışı
+            skor++;
+            skorText.innerText = skor;
+
+            // Hız artışı
+            if (skor % 200 === 0 && hiz < 8) hiz += 0.5;
+
+            // Yeni rakip oluştur
+            if (Math.random() < 0.02) {
+                rakipler.push({
+                    x: Math.random() * (canvas.width - 50),
+                    y: -80,
+                    genislik: 50,
+                    yukseklik: 80
+                });
+            }
+
+            // Yeni altın oluştur
+            if (Math.random() < 0.01) {
+                altinlar.push({
+                    x: Math.random() * (canvas.width - 20),
+                    y: -20,
+                    genislik: 20,
+                    yukseklik: 20
+                });
+            }
+
+            // Rakipleri hareket ettir
+            for (let r of rakipler) {
+                r.y += hiz;
+                if (carpismaKontrol(araba, r)) {
+                    oyunuBitir();
+                    return;
+                }
+            }
+
+            // Altınları hareket ettir
+            for (let a of altinlar) {
+                a.y += hiz;
+                if (carpismaKontrol(araba, a)) {
+                    skor += 50;
+                    skorText.innerText = skor;
+                    altinlar.splice(altinlar.indexOf(a), 1);
+                }
+            }
+
+            // Ekrandan çıkanları temizle
+            rakipler = rakipler.filter(r => r.y < canvas.height);
+            altinlar = altinlar.filter(a => a.y < canvas.height);
+
+            // Çiz
+            ciz();
+        }
+
+        function ciz() {
+            // Arka plan
+            ctx.fillStyle = "#1a1a1a";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Yol
+            ctx.fillStyle = "#333";
+            ctx.fillRect(50, 0, 300, canvas.height);
+            
+            // Yol kenarları
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(48, 0, 4, canvas.height);
+            ctx.fillRect(348, 0, 4, canvas.height);
+
+            // Kesik çizgi
+            yolCizgisiCiz();
+
+            // Altınlar
+            for (let a of altinlar) altinCiz(a);
+
+            // Rakipler
+            for (let r of rakipler) rakipCiz(r);
+
+            // Araba
+            arabaCiz();
+        }
+
+        function oyunuBitir() {
+            oyunBitti = true;
+            clearInterval(oyunDongusu);
+
+            if (skor > enIyiSkor) {
+                enIyiSkor = skor;
+                localStorage.setItem("yarisEnIyi", enIyiSkor);
+                eniyiText.innerText = enIyiSkor;
+            }
+
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff4444";
+            ctx.font = "bold 30px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.fillText("💥 OYUN BİTTİ!", canvas.width/2, canvas.height/2 - 20);
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "20px 'Segoe UI'";
+            ctx.fillText("Skor: " + skor, canvas.width/2, canvas.height/2 + 30);
+        }
+
+        // Başlat
+        oyunuBaslat();
+    </script>
+</body>
+</html>
