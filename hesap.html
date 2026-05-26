@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧮 Hesap Makinesi - Eymen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            display:flex;justify-content:center;align-items:center;
+            min-height:100vh;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            padding:20px;
+        }
+        .makine{
+            background:rgba(0,0,0,0.8);border:3px solid #c084fc;
+            border-radius:20px;padding:20px;box-shadow:0 0 30px rgba(192,132,252,0.4);
+            max-width:400px;width:100%;
+        }
+        h2{color:#ffd700;text-align:center;margin-bottom:15px;}
+        .ekran{
+            background:rgba(0,0,0,0.6);border:2px solid #c084fc;
+            border-radius:12px;padding:20px;margin-bottom:15px;text-align:right;
+            min-height:80px;word-break:break-all;
+        }
+        .ekran-ust{color:#888;font-size:1em;min-height:20px;}
+        .ekran-alt{color:#ffd700;font-size:2em;font-weight:bold;}
+        .tuslar{
+            display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+        }
+        button{
+            background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            color:#e0e0e0;padding:14px 8px;border-radius:10px;
+            font-size:1em;font-weight:bold;cursor:pointer;transition:0.2s;
+            font-family:inherit;
+        }
+        button:hover{background:#c084fc;color:#000;transform:scale(1.05);}
+        button:active{transform:scale(0.95);}
+        .sayi{color:#fff;font-size:1.2em;}
+        .islem{color:#ffd700;}
+        .ozel{background:rgba(255,215,0,0.15);border-color:#ffd700;color:#ffd700;}
+        .esittir{background:linear-gradient(45deg,#c084fc,#ffd700);color:#000;font-size:1.3em;}
+        .sil{background:rgba(255,68,68,0.2);border-color:#ff4444;color:#ff4444;}
+        .sil:hover{background:#ff4444;color:#fff;}
+        p{text-align:center;margin-top:15px;}
+        p a{color:#c084fc;text-decoration:none;}
+        p a:hover{color:#ffd700;}
+    </style>
+</head>
+<body>
+    <div class="makine">
+        <h2>🧮 Hesap Makinesi</h2>
+        
+        <div class="ekran">
+            <div class="ekran-ust" id="islemGoster"></div>
+            <div class="ekran-alt" id="sonucGoster">0</div>
+        </div>
+
+        <div class="tuslar">
+            <button class="sil" onclick="temizle()">AC</button>
+            <button class="sil" onclick="sil()">DEL</button>
+            <button class="ozel" onclick="ekle('(')">(</button>
+            <button class="ozel" onclick="ekle(')')">)</button>
+            <button class="ozel" onclick="hesapla('sqrt')">√</button>
+
+            <button class="ozel" onclick="hesapla('sin')">sin</button>
+            <button class="ozel" onclick="hesapla('cos')">cos</button>
+            <button class="ozel" onclick="hesapla('tan')">tan</button>
+            <button class="ozel" onclick="hesapla('log')">log</button>
+            <button class="ozel" onclick="hesapla('ln')">ln</button>
+
+            <button class="ozel" onclick="ekle('**')">xʸ</button>
+            <button class="ozel" onclick="hesapla('square')">x²</button>
+            <button class="ozel" onclick="hesapla('fact')">n!</button>
+            <button class="ozel" onclick="hesapla('recip')">1/x</button>
+            <button class="ozel" onclick="ekle('Math.PI')">π</button>
+
+            <button class="sayi" onclick="ekle('7')">7</button>
+            <button class="sayi" onclick="ekle('8')">8</button>
+            <button class="sayi" onclick="ekle('9')">9</button>
+            <button class="islem" onclick="ekle('/')">÷</button>
+            <button class="ozel" onclick="hesapla('percent')">%</button>
+
+            <button class="sayi" onclick="ekle('4')">4</button>
+            <button class="sayi" onclick="ekle('5')">5</button>
+            <button class="sayi" onclick="ekle('6')">6</button>
+            <button class="islem" onclick="ekle('*')">×</button>
+            <button class="ozel" onclick="ekle('Math.E')">e</button>
+
+            <button class="sayi" onclick="ekle('1')">1</button>
+            <button class="sayi" onclick="ekle('2')">2</button>
+            <button class="sayi" onclick="ekle('3')">3</button>
+            <button class="islem" onclick="ekle('-')">−</button>
+            <button class="ozel" onclick="ekle('**')">^</button>
+
+            <button class="sayi" onclick="ekle('0')">0</button>
+            <button class="sayi" onclick="ekle('.')">.</button>
+            <button class="ozel" onclick="isaretDegistir()">±</button>
+            <button class="islem" onclick="ekle('+')">+</button>
+            <button class="esittir" onclick="sonucuGoster()">=</button>
+        </div>
+    </div>
+    <p style="text-align:center;margin-top:20px;"><a href="index.html">🏠 Ana Sayfaya Dön</a></p>
+
+    <script>
+        let ifade = "";
+        let sonucGosterildi = false;
+
+        function ekle(deger) {
+            if (sonucGosterildi && !isNaN(deger)) {
+                ifade = "";
+                sonucGosterildi = false;
+            }
+            if (sonucGosterildi && isNaN(deger)) {
+                sonucGosterildi = false;
+            }
+            ifade += deger;
+            guncelleEkran();
+        }
+
+        function temizle() {
+            ifade = "";
+            sonucGosterildi = false;
+            document.getElementById("islemGoster").innerText = "";
+            document.getElementById("sonucGoster").innerText = "0";
+        }
+
+        function sil() {
+            ifade = ifade.slice(0, -1);
+            guncelleEkran();
+        }
+
+        function hesapla(tip) {
+            let mevcut = document.getElementById("sonucGoster").innerText;
+            let sayi = parseFloat(mevcut);
+            
+            if (isNaN(sayi)) return;
+
+            let sonuc;
+            switch(tip) {
+                case 'sqrt':
+                    sonuc = Math.sqrt(sayi);
+                    ifade = `√(${sayi})`;
+                    break;
+                case 'sin':
+                    sonuc = Math.sin(sayi * Math.PI / 180);
+                    ifade = `sin(${sayi}°)`;
+                    break;
+                case 'cos':
+                    sonuc = Math.cos(sayi * Math.PI / 180);
+                    ifade = `cos(${sayi}°)`;
+                    break;
+                case 'tan':
+                    sonuc = Math.tan(sayi * Math.PI / 180);
+                    ifade = `tan(${sayi}°)`;
+                    break;
+                case 'log':
+                    sonuc = Math.log10(sayi);
+                    ifade = `log(${sayi})`;
+                    break;
+                case 'ln':
+                    sonuc = Math.log(sayi);
+                    ifade = `ln(${sayi})`;
+                    break;
+                case 'square':
+                    sonuc = sayi * sayi;
+                    ifade = `(${sayi})²`;
+                    break;
+                case 'fact':
+                    sonuc = faktoriyel(Math.floor(Math.abs(sayi)));
+                    ifade = `${Math.floor(Math.abs(sayi))}!`;
+                    break;
+                case 'recip':
+                    sonuc = 1 / sayi;
+                    ifade = `1/(${sayi})`;
+                    break;
+                case 'percent':
+                    sonuc = sayi / 100;
+                    ifade = `${sayi}%`;
+                    break;
+                default:
+                    return;
+            }
+            
+            document.getElementById("islemGoster").innerText = ifade;
+            document.getElementById("sonucGoster").innerText = yuvarla(sonuc);
+            ifade = yuvarla(sonuc).toString();
+            sonucGosterildi = true;
+        }
+
+        function faktoriyel(n) {
+            if (n === 0 || n === 1) return 1;
+            if (n > 170) return Infinity;
+            let sonuc = 1;
+            for (let i = 2; i <= n; i++) sonuc *= i;
+            return sonuc;
+        }
+
+        function isaretDegistir() {
+            let mevcut = document.getElementById("sonucGoster").innerText;
+            if (mevcut === "0" || mevcut === "") return;
+            if (mevcut.startsWith("-")) {
+                ifade = mevcut.substring(1);
+            } else {
+                ifade = "-" + mevcut;
+            }
+            guncelleEkran();
+        }
+
+        function sonucuGoster() {
+            try {
+                // Parantezleri ve özel ifadeleri düzelt
+                let hesaplanacak = ifade
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/−/g, '-');
+                
+                if (!hesaplanacak || hesaplanacak === "") return;
+                
+                let sonuc = eval(hesaplanacak);
+                document.getElementById("islemGoster").innerText = ifade + " =";
+                document.getElementById("sonucGoster").innerText = yuvarla(sonuc);
+                ifade = yuvarla(sonuc).toString();
+                sonucGosterildi = true;
+            } catch(e) {
+                document.getElementById("sonucGoster").innerText = "Hata!";
+                ifade = "";
+            }
+        }
+
+        function yuvarla(sayi) {
+            if (isNaN(sayi) || !isFinite(sayi)) return "Hata!";
+            if (Number.isInteger(sayi)) return sayi;
+            return parseFloat(sayi.toFixed(10));
+        }
+
+        function guncelleEkran() {
+            document.getElementById("islemGoster").innerText = ifade || "";
+            try {
+                let gosterilecek = ifade.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+                let sonuc = eval(gosterilecek);
+                document.getElementById("sonucGoster").innerText = yuvarla(sonuc);
+            } catch(e) {
+                document.getElementById("sonucGoster").innerText = ifade || "0";
+            }
+        }
+
+        // Klavye desteği
+        document.addEventListener("keydown", function(e) {
+            const tus = e.key;
+            if (tus >= '0' && tus <= '9') ekle(tus);
+            else if (tus === '.') ekle('.');
+            else if (tus === '+') ekle('+');
+            else if (tus === '-') ekle('-');
+            else if (tus === '*') ekle('*');
+            else if (tus === '/') { e.preventDefault(); ekle('/'); }
+            else if (tus === '(') ekle('(');
+            else if (tus === ')') ekle(')');
+            else if (tus === 'Enter' || tus === '=') { e.preventDefault(); sonucuGoster(); }
+            else if (tus === 'Backspace') sil();
+            else if (tus === 'Escape') temizle();
+        });
+    </script>
+</body>
+</html>
