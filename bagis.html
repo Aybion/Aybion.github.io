@@ -3,442 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eymen Yağız Biçer - Babapiro</title>
+    <title>🎮 Steam Bağış - Eymen</title>
     <style>
-        :root {
-            --bg: linear-gradient(135deg, #0d0d0d, #1a0033, #0d0d0d);
-            --container-bg: rgba(0, 0, 0, 0.7);
-            --text: #e0e0e0;
-            --baslik: #ffd700;
-            --alt-baslik: #c084fc;
-            --link: #60a5fa;
-            --kart-bg: rgba(30, 10, 60, 0.8);
-            --input-bg: rgba(255,255,255,0.08);
-            --sayac-bg: rgba(30, 10, 60, 0.6);
-        }
-        body.aydinlik {
-            --bg: linear-gradient(135deg, #f0f0f0, #e0d5ff, #f0f0f0);
-            --container-bg: rgba(255, 255, 255, 0.9);
-            --text: #1a1a1a;
-            --baslik: #7c3aed;
-            --alt-baslik: #5b21b6;
-            --link: #2563eb;
-            --kart-bg: rgba(255, 255, 255, 0.9);
-            --input-bg: rgba(0,0,0,0.05);
-            --sayac-bg: rgba(255, 255, 255, 0.8);
-        }
         *{margin:0;padding:0;box-sizing:border-box;}
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px;
-            min-height: 100vh;
-            transition: all 0.5s ease;
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            color:#e0e0e0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            display:flex;justify-content:center;align-items:center;
+            min-height:100vh;padding:20px;
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--container-bg);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 0 30px rgba(128, 0, 255, 0.3);
-            transition: all 0.5s ease;
+        .kutu{
+            background:rgba(0,0,0,0.7);border:3px solid #c084fc;
+            border-radius:20px;padding:40px;max-width:500px;
+            text-align:center;box-shadow:0 0 30px rgba(192,132,252,0.3);
         }
-        img {
-            display: block;
-            margin: 0 auto;
-            border-radius: 50%;
-            border: 4px solid #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        h1{color:#ffd700;font-size:2em;margin-bottom:20px;}
+        .ikon{font-size:4em;margin-bottom:15px;}
+        .bilgi{
+            background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            border-radius:15px;padding:20px;margin:15px 0;text-align:left;
         }
-        h1 {
-            color: var(--baslik);
-            text-align: center;
-            font-size: 2.5em;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-            transition: color 0.5s;
+        .bilgi p{margin:8px 0;font-size:1.05em;}
+        .bilgi strong{color:#ffd700;}
+        .kod{
+            background:rgba(0,0,0,0.5);color:#ffd700;padding:10px 15px;
+            border-radius:10px;font-size:1.3em;letter-spacing:2px;
+            display:inline-block;margin:10px 0;border:1px solid #ffd700;
         }
-        h2 {
-            color: var(--alt-baslik);
-            border-bottom: 2px solid var(--alt-baslik);
-            padding-bottom: 5px;
-            margin-top: 30px;
-            transition: color 0.5s;
+        .buton{
+            display:inline-block;background:linear-gradient(45deg,#c084fc,#ffd700);
+            color:#000;padding:15px 35px;border-radius:30px;font-size:1.2em;
+            font-weight:bold;text-decoration:none;margin:10px 5px;
+            transition:0.3s;border:none;cursor:pointer;
         }
-        a {
-            color: var(--link);
-            text-decoration: none;
-            transition: color 0.5s;
+        .buton:hover{box-shadow:0 0 20px gold;transform:scale(1.05);}
+        .steam-buton{
+            background:linear-gradient(45deg,#1a73e8,#4fc3f7) !important;
+            color:#fff !important;
         }
-        a:hover {
-            color: #ffd700;
-            text-shadow: 0 0 10px gold;
-        }
-        ul {
-            list-style-type: square;
-            padding-left: 20px;
-        }
-        li {
-            margin: 8px 0;
-        }
-        p {
-            line-height: 1.6;
-        }
-        .tema-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--kart-bg);
-            border: 2px solid var(--alt-baslik);
-            color: var(--baslik);
-            font-size: 1.5em;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 999;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tema-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px gold;
-        }
-        .sayac-kutusu {
-            text-align: center;
-            margin: 20px 0;
-            background: var(--sayac-bg);
-            border: 2px solid var(--alt-baslik);
-            border-radius: 15px;
-            padding: 15px;
-            display: inline-block;
-            min-width: 180px;
-            box-shadow: 0 0 15px rgba(192, 132, 252, 0.4);
-            transition: all 0.5s;
-        }
-        .sayac-sayi {
-            font-size: 3em;
-            font-weight: bold;
-            color: var(--baslik);
-            text-shadow: 0 0 10px gold;
-            display: block;
-        }
-        .sayac-yazi {
-            color: var(--alt-baslik);
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        .oyun-kartlari {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .oyun-kart {
-            background: var(--kart-bg);
-            border: 2px solid var(--alt-baslik);
-            border-radius: 15px;
-            padding: 20px;
-            width: 220px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(192, 132, 252, 0.4);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .oyun-kart:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
-            border-color: #ffd700;
-        }
-        .oyun-ikon {
-            font-size: 2.5em;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .oyun-kart h3 {
-            color: var(--baslik);
-            margin: 10px 0;
-            font-size: 1.5em;
-        }
-        .oyun-kart p {
-            font-size: 0.9em;
-            margin: 5px 0;
-            color: var(--text);
-        }
-        .oyun-kart strong {
-            color: var(--baslik);
-            font-weight: bold;
-        }
-        .oyun-butonlari {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        .oyun-buton {
-            background: linear-gradient(45deg, #c084fc, #ffd700);
-            color: #000;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 1.1em;
-            font-weight: bold;
-            text-decoration: none;
-            box-shadow: 0 0 15px rgba(192,132,252,0.6);
-            transition: 0.3s;
-            display: inline-block;
-            text-align: center;
-        }
-        .oyun-buton:hover {
-            box-shadow: 0 0 25px gold;
-            transform: scale(1.05);
-        }
-        .oyun-buton-2048 { background: linear-gradient(45deg, #f2b179, #ffd700); }
-        .oyun-buton-mayin { background: linear-gradient(45deg, #ff6b6b, #ffd700); }
-        .oyun-buton-tkm { background: linear-gradient(45deg, #4ade80, #ffd700); }
-        .oyun-buton-ai { background: linear-gradient(45deg, #60a5fa, #c084fc); }
-        .oyun-buton-yaris { background: linear-gradient(45deg, #ff4444, #ffd700); }
-        .oyun-buton-bagis { background: linear-gradient(45deg, #1a73e8, #4fc3f7); color: #fff; }
-        .oyun-buton-arcade { background: linear-gradient(45deg, #ff00ff, #ffd700); }
-        .oyun-buton-hesap { background: linear-gradient(45deg, #f59e0b, #ffd700); }
-        .yildiz-secim {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            font-size: 2.5em;
-            direction: rtl;
-        }
-        .yildiz-secim input { display: none; }
-        .yildiz-secim label {
-            color: #555;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .yildiz-secim input:checked ~ label,
-        .yildiz-secim label:hover,
-        .yildiz-secim label:hover ~ label {
-            color: #ffd700;
-            text-shadow: 0 0 10px gold;
-            transform: scale(1.2);
-        }
-        .form-kutu input,
-        .form-kutu textarea {
-            background: var(--input-bg);
-            border: 2px solid var(--alt-baslik);
-            border-radius: 12px;
-            padding: 14px;
-            color: var(--text);
-            font-size: 1em;
-            width: 100%;
-            box-sizing: border-box;
-            transition: all 0.5s;
-            font-family: inherit;
-        }
-        .form-btn {
-            background: linear-gradient(45deg, #c084fc, #ffd700);
-            color: #000;
-            border: none;
-            padding: 14px;
-            border-radius: 30px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-        .form-btn:hover { box-shadow: 0 0 20px gold; }
+        .not{color:#aaa;font-size:0.85em;margin-top:20px;}
+        a{color:#60a5fa;text-decoration:none;}
+        a:hover{color:#ffd700;}
     </style>
 </head>
 <body>
+    <div class="kutu">
+        <div class="ikon">🎮</div>
+        <h1>Steam Bağış</h1>
+        <p>Steam Cüzdan Kodu göndererek bana destek olabilirsin.</p>
 
-    <button class="tema-btn" id="temaBtn" onclick="temaDegistir()" title="Tema Değiştir">🌙</button>
-
-    <div class="container">
-        <h1>Eymen Yağız Biçer</h1>
-
-        <div style="text-align: center;">
-            <div class="sayac-kutusu">
-                <span class="sayac-sayi" id="sayac">0</span>
-                <span class="sayac-yazi">👀 Ziyaretçi</span>
-            </div>
+        <div class="bilgi">
+            <p><strong>👤 Steam Adı:</strong> MisterKendrick</p>
+            <p><strong>🆔 Steam Arkadaş Kodu:</strong></p>
+            <div class="kod">1507440683</div>
+            <p><strong>📧 E-Posta:</strong> eymen6152@yahoo.com</p>
         </div>
 
-        <img src="ben.jpg" alt="Eymen" width="200">
-
-        <h2>Babapiro Eymenin Biyografisi</h2>
-        <p>
-            Eymen Yağız Biçer 12 Mart 2010 yılında Ordu'da doğmuştur. Annesinin adı Leyla babasının adı da Erol'dur. 4 kardeşli ailenin en büyük çocuğudur. Yakışıklı adamımız Eymen'in ileride çocuklarına bırakacağı efsane bir oyun mirası vardır. Eymen'in Steam'de 325 oyunu, Epic Games'te 245 ve Microsoft Store'da Minecraft vardır. Ama sorsan Eymen'in üç oyunda öyle bir hesap dizmiştir ki görseniz ağzınızın suyu akar. İlk efsane hesaplı oyunumuz Valorant, Valorant hesabımızda öyle efsane skinler vardır ki VCT26 X Fut Classic'den Kaosun Başlangıcı Vandal'a kadar her silahta efsane skinler vardır. Arkadaşlık atmak isteyen arkadaşlar için (Riot ID: Kendrick LamarEymen). Sıradaki oyunumuz ise Rocket League, bu oyunda Valorant kadar iyi bir hesap dizmesem de gelene mükemmel araçlar, skinler, tekerlekler, şapkalar, gol sevinçleri vb. gibi efsane şeyler vardır. İstek atmak isteyenler için (Epic ID: Aybion). Ve işte o efsane oyuna tabii ki Brawl Stars'a, neler var neler burada karakterler skinler kulübü. Eymen'in Brawl Stars'da kupası bu biyografiyi yazarken kupası 64522. Eymen'in bu biyografiyi yazarken oyundaki karakterlerden 102/102 yani bütün karakterler vardır. Eymen'in en sevdiği ve favori karakteri destansı bir karakter olan Bea'dir. Eymen'in bir de biyografiyi yazarken 873482 kupalı ve başkanı olduğu bir kulübü vardır. Kulüp adı ise ~|IMPARATORS|~'dur. Ekstra olarak Eymen'in 19 tane prestiji vardır. Arkadaşlık atmak istiyorsanız (Supercell ID: Redwhite6152). Eğer Steam için istek atmak için (Steam Arkadaş Kodum: 1507440683) ve Xbox ile PlayStation için de Aybion yazmanız yeterli. Eymen Yağız Biçer bu biyografiyi yazarken Fatih Anadolu Lisesi'nde 10/F'de okumaktadır. Okuldaki en sevdiği ve Eymen'den sonraki en seksi insan olan Kerim Sevgi'li'dir. Kerim salağı 2011 doğumludur yani benden küçüktür :). Eymen 181 cm boyunda 82 kg'dir. Eymen kumral, kıvırcık saçlı, yeşil gözlü, yakışıklı,boylu ve postludur. Eymen yaşamına devam etmektedir ve hayali Kendrick Lamar'la düet yapmaktır. Son olarak benimle konuşmak isteyenler iletişime yazdığım e-posta adresinden ulaşabilir.
-        </p>
-
-        <h2>Eğitim</h2>
-        <p>
-            İlkokul eğitimini Durugöl Şehit Bayram Gümüş İlkokulu, ortaokul Büyükşehir Belediyesi Ordu Anadolu İmam Hatip Lisesi (Ortaokul Bölümü) ve lise eğitimini ise Fatih Anadolu Lisesi'nde devam etmektedir.
-        </p>
-
-        <h2>Hobilerim</h2>
-        <ul>
-            <li>Amerikan Hip-Hop ve Amerikan Rap dinlemek</li>
-            <li>Futbol takip edip futbol maçı izlemek</li>
-            <li>Haber izleyip 65+ dayılarla Araba/Siyaset/Futbol üçlüsünü konuşmak</li>
-        </ul>
-
-        <h2>🎮 Oyunlarım & Hesaplarım</h2>
-        <div class="oyun-kartlari">
-            <div class="oyun-kart">
-                <span class="oyun-ikon">🔫</span>
-                <h3>Valorant</h3>
-                <p>Riot ID: <strong>Kendrick Lamar#Eymen</strong></p>
-                <p>VCT26 X Fut Classic & Kaosun Başlangıcı Vandal</p>
-            </div>
-            <div class="oyun-kart">
-                <span class="oyun-ikon">🚗</span>
-                <h3>Rocket League</h3>
-                <p>Epic ID: <strong>Aybion</strong></p>
-                <p>Efsane araçlar, skinler, gol sevinçleri</p>
-            </div>
-            <div class="oyun-kart">
-                <span class="oyun-ikon">⭐</span>
-                <h3>Brawl Stars</h3>
-                <p>Supercell ID: <strong>Redwhite6152</strong></p>
-                <p>🏆 64.522 Kupa | Kulüp: ~|IMPARATORS|~</p>
-                <p>102/102 Karakter | 19 Prestij</p>
-            </div>
-            <div class="oyun-kart">
-                <span class="oyun-ikon">🎲</span>
-                <h3>Steam</h3>
-                <p>325 Oyun</p>
-                <p>Arkadaş Kodum: <strong>1507440683</strong></p>
-            </div>
-            <div class="oyun-kart">
-                <span class="oyun-ikon">🎁</span>
-                <h3>Epic Games</h3>
-                <p>245 Oyun</p>
-                <p>ID: <strong>Aybion</strong></p>
-            </div>
+        <p style="margin:15px 0;">Nasıl Steam Cüzdan Kodu gönderilir?</p>
+        <div class="bilgi">
+            <p>1️⃣ Steam'den <strong>Dijital Hediye Kartı</strong> satın al</p>
+            <p>2️⃣ Kodu bana <strong>e-posta</strong> veya <strong>Steam sohbet</strong> ile gönder</p>
+            <p>3️⃣ Kodu cüzdanıma ekleyip oyun alacağım 🎉</p>
         </div>
 
-        <h2>🕹️ Eymen'in Oyunları</h2>
-        <p>Aşağıdaki butonlara tıklayarak hemen oynayabilirsin:</p>
-        <div class="oyun-butonlari">
-            <a href="arcade.html" class="oyun-buton oyun-buton-arcade">🕹️ Arcade Salonu</a>
-            <a href="oyun.html" class="oyun-buton">🐍 Yılan Oyunu</a>
-            <a href="2048.html" class="oyun-buton oyun-buton-2048">🔢 2048</a>
-            <a href="mayin.html" class="oyun-buton oyun-buton-mayin">💣 Mayın Tarlası</a>
-            <a href="tkm.html" class="oyun-buton oyun-buton-tkm">✂️ Taş Kağıt Makas</a>
-            <a href="yaris.html" class="oyun-buton oyun-buton-yaris">🏎️ Yarış Oyunu</a>
-            <a href="asistan.html" class="oyun-buton oyun-buton-ai">🤖 Yapay Zeka</a>
-            <a href="hesap.html" class="oyun-buton oyun-buton-hesap">🧮 Hesap Makinesi</a>
-            <a href="bagis.html" class="oyun-buton oyun-buton-bagis">🎮 Steam Bağış</a>
-        </div>
+        <a href="https://steamcommunity.com/profiles/76561199467706411" target="_blank" class="buton steam-buton">🎮 Steam Profilim</a>
+        <a href="mailto:eymen6152@yahoo.com?subject=Steam Cüzdan Kodu" class="buton">📧 E-Posta Gönder</a>
 
-        <h2>İletişim</h2>
-        <p>Bana <a href="mailto:eymen6152@yahoo.com">eymen6152@yahoo.com</a> adresinden ulaşabilirsiniz.</p>
-
-        <h2>⭐ Siteyi Değerlendir</h2>
-        <form id="degerlendirmeForm" style="max-width: 500px; margin: 0 auto;">
-            <div class="yildiz-secim">
-                <input type="radio" name="yildiz" id="y5" value="5⭐">
-                <label for="y5">⭐</label>
-                <input type="radio" name="yildiz" id="y4" value="4⭐">
-                <label for="y4">⭐</label>
-                <input type="radio" name="yildiz" id="y3" value="3⭐">
-                <label for="y3">⭐</label>
-                <input type="radio" name="yildiz" id="y2" value="2⭐">
-                <label for="y2">⭐</label>
-                <input type="radio" name="yildiz" id="y1" value="1⭐">
-                <label for="y1">⭐</label>
-            </div>
-            <p style="text-align:center; color: var(--alt-baslik); font-size:0.9em;">Tıkla, puan ver!</p>
-            <div class="form-kutu" style="display:flex; flex-direction:column; gap:12px;">
-                <input type="text" name="isim" placeholder="Adın (istersen boş bırak)">
-                <textarea name="yorum" placeholder="Yorumun..." rows="3" required></textarea>
-                <button type="submit" class="form-btn">⭐ Gönder</button>
-            </div>
-        </form>
-        <p id="form-mesaj" style="text-align:center; margin-top:10px; color:var(--baslik); min-height:24px;"></p>
+        <p class="not">Bağış yaptığın için şimdiden teşekkürler! ❤️</p>
+        <p style="margin-top:15px;"><a href="index.html">🏠 Ana Sayfaya Dön</a></p>
     </div>
-
-    <script>
-        (function() {
-            let sayi = localStorage.getItem("eymen_sayac");
-            if (!sayi) {
-                sayi = Math.floor(Math.random() * 50) + 1;
-                localStorage.setItem("eymen_sayac", sayi);
-            } else {
-                sayi = parseInt(sayi);
-            }
-            let geldiMi = sessionStorage.getItem("eymen_bu_oturum");
-            if (!geldiMi) {
-                sayi++;
-                localStorage.setItem("eymen_sayac", sayi);
-                sessionStorage.setItem("eymen_bu_oturum", "evet");
-            }
-            document.getElementById("sayac").innerText = sayi;
-        })();
-
-        function temaDegistir() {
-            const body = document.body;
-            const btn = document.getElementById("temaBtn");
-            body.classList.toggle("aydinlik");
-            if (body.classList.contains("aydinlik")) {
-                btn.innerText = "☀️";
-                localStorage.setItem("eymen_tema", "aydinlik");
-            } else {
-                btn.innerText = "🌙";
-                localStorage.setItem("eymen_tema", "karanlik");
-            }
-        }
-        (function() {
-            const kayitliTema = localStorage.getItem("eymen_tema");
-            const btn = document.getElementById("temaBtn");
-            if (kayitliTema === "aydinlik") {
-                document.body.classList.add("aydinlik");
-                btn.innerText = "☀️";
-            } else {
-                btn.innerText = "🌙";
-            }
-        })();
-
-        document.getElementById("degerlendirmeForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const mesaj = document.getElementById("form-mesaj");
-            const yildizInput = document.querySelector('input[name="yildiz"]:checked');
-            if (!yildizInput) {
-                mesaj.innerText = "❌ Lütfen yıldız seç!";
-                mesaj.style.color = "#ff6b6b";
-                return;
-            }
-            const yorum = this.querySelector('textarea[name="yorum"]').value.trim();
-            if (!yorum) {
-                mesaj.innerText = "❌ Lütfen yorum yaz!";
-                mesaj.style.color = "#ff6b6b";
-                return;
-            }
-            const isim = this.querySelector('input[name="isim"]').value.trim() || "İsimsiz";
-            const data = { Yildiz: yildizInput.value, Isim: isim, Yorum: yorum };
-            try {
-                const response = await fetch("https://formspree.io/f/mbdwnnde", {
-                    method: "POST", body: JSON.stringify(data),
-                    headers: { "Content-Type": "application/json" }
-                });
-                if (response.ok) {
-                    mesaj.innerText = "✅ Gönderildi! Teşekkürler.";
-                    mesaj.style.color = "#ffd700";
-                    this.reset();
-                } else {
-                    mesaj.innerText = "❌ Hata oluştu.";
-                    mesaj.style.color = "#ff6b6b";
-                }
-            } catch {
-                mesaj.innerText = "❌ Bağlantı hatası.";
-                mesaj.style.color = "#ff6b6b";
-            }
-            setTimeout(() => mesaj.innerText = "", 4000);
-        });
-    </script>
-
 </body>
 </html>
