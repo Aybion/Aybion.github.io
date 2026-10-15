@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏎️ 3D Arduino Yarış</title>
+    <title>🏎️ 3D Arduino Yarış - AI Rakipler</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{
@@ -14,34 +14,84 @@
         canvas{display:block;}
         .ust-panel{
             position:fixed;top:0;left:0;right:0;
-            background:rgba(0,0,0,0.7);padding:15px;
+            background:rgba(0,0,0,0.8);padding:12px 20px;
             display:flex;justify-content:space-between;align-items:center;
             z-index:100;border-bottom:2px solid #c084fc;
+            flex-wrap:wrap;gap:10px;
         }
         .ust-panel h1{
-            color:#ffd700;font-size:1.2em;text-shadow:0 0 10px gold;
+            color:#ffd700;font-size:1.1em;text-shadow:0 0 10px gold;
         }
-        .skorlar{display:flex;gap:20px;font-size:0.9em;}
+        .skorlar{display:flex;gap:15px;font-size:0.85em;flex-wrap:wrap;}
         .skor{color:#ffd700;font-weight:bold;}
         .eniyi{color:#c084fc;}
+        .bolum{color:#4ade80;font-weight:bold;}
         .alt-panel{
             position:fixed;bottom:0;left:0;right:0;
-            background:rgba(0,0,0,0.7);padding:15px;
+            background:rgba(0,0,0,0.8);padding:12px;
             text-align:center;z-index:100;
             border-top:2px solid #c084fc;
         }
         .durum{
             color:#ff6b6b;font-weight:bold;margin-bottom:8px;
+            font-size:0.9em;
         }
         .durum.bagli{color:#4ade80;}
         button{
             background:#c084fc;color:#000;border:none;
-            padding:10px 25px;font-size:1em;border-radius:25px;
+            padding:10px 20px;font-size:0.95em;border-radius:25px;
             cursor:pointer;font-weight:bold;margin:0 5px;
             transition:0.3s;
         }
         button:hover{background:#ffd700;box-shadow:0 0 15px gold;}
         button:disabled{opacity:0.5;cursor:not-allowed;}
+        .zorluk-secim{
+            position:fixed;top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.95);
+            border:3px solid #c084fc;border-radius:20px;
+            padding:30px;text-align:center;z-index:200;
+            box-shadow:0 0 40px rgba(192,132,252,0.5);
+            display:none;
+        }
+        .zorluk-secim.aktif{display:block;}
+        .zorluk-secim h2{
+            color:#ffd700;margin-bottom:20px;
+            text-shadow:0 0 10px gold;
+        }
+        .zorluk-btn{
+            display:block;width:200px;
+            margin:10px auto;padding:15px;
+            border-radius:15px;border:none;
+            font-size:1.1em;font-weight:bold;
+            cursor:pointer;transition:0.3s;
+            color:#fff;
+        }
+        .zorluk-kolay{background:linear-gradient(45deg,#4ade80,#22c55e);}
+        .zorluk-normal{background:linear-gradient(45deg,#f59e0b,#ffd700);color:#000 !important;}
+        .zorluk-zor{background:linear-gradient(45deg,#ff4444,#cc0000);}
+        .zorluk-btn:hover{transform:scale(1.05);box-shadow:0 0 20px gold;}
+        .bolum-mesaj{
+            position:fixed;top:50%;left:50%;
+            transform:translate(-50%,-50%);
+            background:rgba(0,0,0,0.9);
+            border:3px solid #ffd700;border-radius:20px;
+            padding:30px 50px;text-align:center;
+            z-index:150;display:none;
+            box-shadow:0 0 40px gold;
+            animation:bolumAnim 0.5s ease;
+        }
+        .bolum-mesaj.aktif{display:block;}
+        .bolum-mesaj h2{
+            color:#ffd700;font-size:2em;
+            text-shadow:0 0 15px gold;
+            margin-bottom:10px;
+        }
+        .bolum-mesaj p{color:#c084fc;font-size:1.2em;}
+        @keyframes bolumAnim{
+            from{transform:translate(-50%,-50%) scale(0.5);opacity:0;}
+            to{transform:translate(-50%,-50%) scale(1);opacity:1;}
+        }
         .bilgi{
             position:fixed;top:70px;left:20px;
             background:rgba(0,0,0,0.6);padding:10px;
@@ -52,8 +102,9 @@
 </head>
 <body>
     <div class="ust-panel">
-        <h1>🏎️ 3D Arduino Yarış</h1>
+        <h1>🏎️ 3D Arduino Yarış - AI</h1>
         <div class="skorlar">
+            <span class="bolum">📊 Bölüm: <span id="bolum">1</span></span>
             <span class="skor">🏆 Skor: <span id="skor">0</span></span>
             <span class="eniyi">👑 En İyi: <span id="eniyi">0</span></span>
         </div>
@@ -61,43 +112,52 @@
 
     <div class="bilgi">
         🎮 Potansiyometreyi çevir<br>
-        🚗 Arabayı kontrol et
+        🚗 Arabayı kontrol et<br>
+        🧠 Rakipler artık akıllı!
     </div>
 
     <div class="alt-panel">
         <div class="durum" id="durum">🔌 Arduino'ya Bağlan</div>
         <button id="baglanBtn" onclick="arduinoBaglan()">🔌 Bağlan</button>
-        <button id="baslatBtn" onclick="oyunuBaslat()" disabled>🔄 Yeniden Başla</button>
+        <button id="baslatBtn" onclick="zorlukSecimGoster()" disabled>🎮 Yeni Oyun</button>
     </div>
 
-    <!-- Three.js CDN -->
+    <div class="zorluk-secim" id="zorlukSecim">
+        <h2>🎯 Zorluk Seç</h2>
+        <button class="zorluk-btn zorluk-kolay" onclick="oyunuBaslat('kolay')">😊 Kolay</button>
+        <button class="zorluk-btn zorluk-normal" onclick="oyunuBaslat('normal')">😎 Normal</button>
+        <button class="zorluk-btn zorluk-zor" onclick="oyunuBaslat('zor')">😈 Zor</button>
+    </div>
+
+    <div class="bolum-mesaj" id="bolumMesaj">
+        <h2 id="bolumMesajBaslik">🎉 Bölüm 2!</h2>
+        <p id="bolumMesajAlt">Daha hızlı, daha zor!</p>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
         // ==================== THREE.JS KURULUM ====================
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Gökyüzü mavi
+        scene.background = new THREE.Color(0x87ceeb);
         scene.fog = new THREE.Fog(0x87ceeb, 50, 150);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 5, 10);
-        camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Işık
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
-
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(10, 20, 10);
         directionalLight.castShadow = true;
         scene.add(directionalLight);
 
-        // ==================== ZEMİN ====================
+        // Zemin
         const zeminGeo = new THREE.PlaneGeometry(200, 200);
         const zeminMat = new THREE.MeshStandardMaterial({ color: 0x1a3a1a });
         const zemin = new THREE.Mesh(zeminGeo, zeminMat);
@@ -106,14 +166,12 @@
         zemin.receiveShadow = true;
         scene.add(zemin);
 
-        // Yol
         const yolGeo = new THREE.PlaneGeometry(10, 200);
         const yolMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
         const yol = new THREE.Mesh(yolGeo, yolMat);
         yol.rotation.x = -Math.PI / 2;
         scene.add(yol);
 
-        // Yol çizgileri (kesikli)
         const cizgiMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 });
         const cizgiler = [];
         for (let i = 0; i < 50; i++) {
@@ -125,24 +183,20 @@
             cizgiler.push(cizgi);
         }
 
-        // Yol kenarları (beyaz şeritler)
         const seritMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const seritSolGeo = new THREE.PlaneGeometry(0.3, 200);
         const seritSol = new THREE.Mesh(seritSolGeo, seritMat);
         seritSol.rotation.x = -Math.PI / 2;
         seritSol.position.set(-5, 0.01, 0);
         scene.add(seritSol);
-        
         const seritSag = new THREE.Mesh(seritSolGeo, seritMat);
         seritSag.rotation.x = -Math.PI / 2;
         seritSag.position.set(5, 0.01, 0);
         scene.add(seritSag);
 
-        // ==================== ARABA OLUŞTUR ====================
+        // ==================== ARABA ====================
         function arabaYap(renk) {
             const araba = new THREE.Group();
-
-            // Gövde
             const govdeGeo = new THREE.BoxGeometry(1.8, 0.8, 3.5);
             const govdeMat = new THREE.MeshStandardMaterial({ color: renk, metalness: 0.5, roughness: 0.3 });
             const govde = new THREE.Mesh(govdeGeo, govdeMat);
@@ -150,7 +204,6 @@
             govde.castShadow = true;
             araba.add(govde);
 
-            // Tavan
             const tavanGeo = new THREE.BoxGeometry(1.4, 0.6, 1.8);
             const tavanMat = new THREE.MeshStandardMaterial({ color: renk, metalness: 0.5, roughness: 0.3 });
             const tavan = new THREE.Mesh(tavanGeo, tavanMat);
@@ -158,21 +211,15 @@
             tavan.castShadow = true;
             araba.add(tavan);
 
-            // Cam (ön)
             const camGeo = new THREE.BoxGeometry(1.3, 0.5, 0.1);
             const camMat = new THREE.MeshStandardMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.6 });
             const camOn = new THREE.Mesh(camGeo, camMat);
             camOn.position.set(0, 1.3, 0.7);
             araba.add(camOn);
 
-            // Tekerlekler
             const tekerlekGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
             const tekerlekMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-            const tekerlekPozisyonlari = [
-                [-0.9, 0.4, 1.2], [0.9, 0.4, 1.2],
-                [-0.9, 0.4, -1.2], [0.9, 0.4, -1.2]
-            ];
-            tekerlekPozisyonlari.forEach(pos => {
+            [[-0.9, 0.4, 1.2], [0.9, 0.4, 1.2], [-0.9, 0.4, -1.2], [0.9, 0.4, -1.2]].forEach(pos => {
                 const tekerlek = new THREE.Mesh(tekerlekGeo, tekerlekMat);
                 tekerlek.rotation.z = Math.PI / 2;
                 tekerlek.position.set(pos[0], pos[1], pos[2]);
@@ -180,7 +227,6 @@
                 araba.add(tekerlek);
             });
 
-            // Farlar
             const farGeo = new THREE.BoxGeometry(0.3, 0.2, 0.1);
             const farMat = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 0.5 });
             const farSol = new THREE.Mesh(farGeo, farMat);
@@ -193,7 +239,6 @@
             return araba;
         }
 
-        // Oyuncu arabası
         const oyuncuAraba = arabaYap(0x4488ff);
         oyuncuAraba.position.set(0, 0, 5);
         scene.add(oyuncuAraba);
@@ -205,11 +250,9 @@
             const yukseklik = 3 + Math.random() * 8;
             const derinlik = 2 + Math.random() * 3;
             const renk = new THREE.Color().setHSL(Math.random() * 0.2 + 0.5, 0.5, 0.4);
-            
             const binaGeo = new THREE.BoxGeometry(genislik, yukseklik, derinlik);
             const binaMat = new THREE.MeshStandardMaterial({ color: renk });
             const bina = new THREE.Mesh(binaGeo, binaMat);
-            
             const taraf = Math.random() > 0.5 ? 1 : -1;
             bina.position.set(taraf * (10 + Math.random() * 15), yukseklik / 2, -100 - Math.random() * 50);
             bina.castShadow = true;
@@ -218,6 +261,94 @@
             binalar.push(bina);
         }
         for (let i = 0; i < 30; i++) binaOlustur();
+
+        // ==================== YAPAY ZEKA RAKİP SINIFI ====================
+        class AIRakip {
+            constructor(tip) {
+                this.tip = tip; // "normal", "agresif", "zikzak", "hizli"
+                this.mesh = arabaYap(this.tipRenk());
+                this.mesh.position.set(-4 + Math.random() * 8, 0, -100);
+                scene.add(this.mesh);
+                
+                this.hedefX = this.mesh.position.x;
+                this.hiz = 0.5;
+                this.zeka = 0.5;
+                this.seritDegistirmeZaman = 0;
+                this.zikzakYon = 1;
+                
+                // Tip özellikleri
+                if (tip === "agresif") {
+                    this.hiz = 0.8;
+                    this.zeka = 1.0;
+                } else if (tip === "zikzak") {
+                    this.hiz = 0.6;
+                    this.zeka = 0.3;
+                } else if (tip === "hizli") {
+                    this.hiz = 1.2;
+                    this.zeka = 0.7;
+                } else {
+                    this.hiz = 0.5;
+                    this.zeka = 0.5;
+                }
+            }
+
+            tipRenk() {
+                if (this.tip === "agresif") return 0xff0000;
+                if (this.tip === "zikzak") return 0xff8800;
+                if (this.tip === "hizli") return 0xff00ff;
+                return 0xff3333;
+            }
+
+            guncelle(oyuncuX, hiz, rakipler) {
+                // Zeka seviyesine göre oyuncuyu takip et
+                if (this.zeka > 0.5) {
+                    // Oyuncuya doğru yönel
+                    this.hedefX = oyuncuX;
+                } else if (this.tip === "zikzak") {
+                    // Zikzak çiz
+                    this.seritDegistirmeZaman++;
+                    if (this.seritDegistirmeZaman > 30) {
+                        this.zikzakYon *= -1;
+                        this.seritDegistirmeZaman = 0;
+                    }
+                    this.hedefX += this.zikzakYon * 0.15;
+                } else {
+                    // Rastgele şerit değiştir
+                    this.seritDegistirmeZaman++;
+                    if (this.seritDegistirmeZaman > 60) {
+                        this.hedefX = -4 + Math.random() * 8;
+                        this.seritDegistirmeZaman = 0;
+                    }
+                }
+
+                // Diğer rakiplerden kaçınma (zeka seviyesi yüksekse)
+                if (this.zeka > 0.7) {
+                    rakipler.forEach(diger => {
+                        if (diger === this) return;
+                        const dx = this.mesh.position.x - diger.mesh.position.x;
+                        const dz = this.mesh.position.z - diger.mesh.position.z;
+                        if (Math.abs(dz) < 5 && Math.abs(dx) < 2) {
+                            // Yandan kaç
+                            this.hedefX += dx > 0 ? 0.2 : -0.2;
+                        }
+                    });
+                }
+
+                // Sınırlar
+                if (this.hedefX < -4) this.hedefX = -4;
+                if (this.hedefX > 4) this.hedefX = 4;
+
+                // Yumuşak hareket
+                this.mesh.position.x += (this.hedefX - this.mesh.position.x) * 0.1;
+
+                // İleri hareket
+                this.mesh.position.z += hiz * this.hiz;
+            }
+
+            temizle() {
+                scene.remove(this.mesh);
+            }
+        }
 
         // ==================== OYUN DEĞİŞKENLERİ ====================
         let rakipler = [];
@@ -231,31 +362,38 @@
         let reader = null;
         let rakipZaman = 0;
         let oyunAktif = false;
+        
+        let zorluk = "normal";
+        let zorlukAyarlari = {
+            kolay: { hiz: 0.4, rakipSiklik: 150, hizArtis: 0.05, bolumSkor: 700 },
+            normal: { hiz: 0.6, rakipSiklik: 100, hizArtis: 0.1, bolumSkor: 500 },
+            zor: { hiz: 0.9, rakipSiklik: 60, hizArtis: 0.15, bolumSkor: 400 }
+        };
+        
+        let bolum = 1;
+        let sonBolumSkoru = 0;
+        let bolumGecisAktif = false;
 
         document.getElementById("eniyi").innerText = enIyi;
 
         // ==================== ARDUINO BAĞLANTISI ====================
         async function arduinoBaglan() {
             const durum = document.getElementById("durum");
-            
             if (!("serial" in navigator)) {
                 durum.innerText = "❌ Web Serial desteklenmiyor!";
                 return;
             }
-
             try {
                 durum.innerText = "🔌 Bağlanıyor...";
                 port = await navigator.serial.requestPort();
                 await port.open({ baudRate: 9600 });
-                
                 arduinoBagli = true;
                 durum.innerText = "✅ Arduino Bağlı!";
                 durum.className = "durum bagli";
                 document.getElementById("baglanBtn").disabled = true;
                 document.getElementById("baslatBtn").disabled = false;
-                
                 okumayaBasla();
-                oyunuBaslat();
+                zorlukSecimGoster();
             } catch (err) {
                 durum.innerText = "❌ Hata: " + err.message;
             }
@@ -265,7 +403,6 @@
             const textDecoder = new TextDecoderStream();
             port.readable.pipeTo(textDecoder.writable);
             reader = textDecoder.readable.getReader();
-            
             let tampon = "";
             while (true) {
                 try {
@@ -277,37 +414,54 @@
                         tampon = satirlar.pop();
                         for (const satir of satirlar) {
                             const deger = parseInt(satir.trim());
-                            if (!isNaN(deger)) {
-                                arduinoDeger = deger;
-                            }
+                            if (!isNaN(deger)) arduinoDeger = deger;
                         }
                     }
                 } catch (err) { break; }
             }
         }
 
+        function zorlukSecimGoster() {
+            document.getElementById("zorlukSecim").classList.add("aktif");
+        }
+
         // ==================== OYUN ====================
-        function oyunuBaslat() {
-            if (!arduinoBagli) return;
+        function oyunuBaslat(seciliZorluk) {
+            zorluk = seciliZorluk || "normal";
+            document.getElementById("zorlukSecim").classList.remove("aktif");
             
-            // Eski rakipleri temizle
-            rakipler.forEach(r => scene.remove(r));
+            rakipler.forEach(r => r.temizle());
             rakipler = [];
             
             oyuncuAraba.position.set(0, 0, 5);
             skor = 0;
+            bolum = 1;
+            sonBolumSkoru = 0;
             oyunBitti = false;
             oyunAktif = true;
-            hiz = 0.5;
+            hiz = zorlukAyarlari[zorluk].hiz;
             rakipZaman = 0;
+            bolumGecisAktif = false;
+            
             document.getElementById("skor").innerText = "0";
+            document.getElementById("bolum").innerText = "1";
         }
 
+        // Yapay zeka rakip oluştur
         function rakipOlustur() {
-            const rakip = arabaYap(0xff3333);
-            const x = -4 + Math.random() * 8;
-            rakip.position.set(x, 0, -100);
-            scene.add(rakip);
+            const tipler = ["normal", "agresif", "zikzak", "hizli"];
+            let tip;
+            
+            // Zorluk ve bölüme göre tip seç
+            if (bolum < 2) {
+                tip = "normal";
+            } else if (bolum < 4) {
+                tip = tipler[Math.floor(Math.random() * 2)]; // normal, agresif
+            } else {
+                tip = tipler[Math.floor(Math.random() * tipler.length)];
+            }
+            
+            const rakip = new AIRakip(tip);
             rakipler.push(rakip);
         }
 
@@ -317,43 +471,59 @@
             return dx < 1.5 && dz < 2.5;
         }
 
-        // ==================== ANİMASYON DÖNGÜSÜ ====================
-        let sonZaman = 0;
-        function animate(zaman) {
+        function bolumGecisi() {
+            bolum++;
+            document.getElementById("bolum").innerText = bolum;
+            document.getElementById("bolumMesajBaslik").innerText = "🎉 Bölüm " + bolum + "!";
+            
+            let mesaj = "";
+            if (bolum === 2) mesaj = "Daha hızlı, daha zor!";
+            else if (bolum === 3) mesaj = "Artık ustalaşıyorsun!";
+            else if (bolum === 4) mesaj = "Bu iş ciddileşiyor...";
+            else if (bolum === 5) mesaj = "Efsane oluyorsun!";
+            else if (bolum >= 6) mesaj = "Sen bir efsanesin! 🔥";
+            document.getElementById("bolumMesajAlt").innerText = mesaj;
+            
+            document.getElementById("bolumMesaj").classList.add("aktif");
+            bolumGecisAktif = true;
+            
+            setTimeout(() => {
+                document.getElementById("bolumMesaj").classList.remove("aktif");
+                bolumGecisAktif = false;
+            }, 2000);
+            
+            hiz += zorlukAyarlari[zorluk].hizArtis * 2;
+        }
+
+        // ==================== ANİMASYON ====================
+        function animate() {
             requestAnimationFrame(animate);
             
-            if (oyunAktif && !oyunBitti) {
-                // Potansiyometre değerini kullan (0-1023 arası)
-                const oran = 1 - (arduinoDeger / 1023); // Ters çevir
+            if (oyunAktif && !oyunBitti && !bolumGecisAktif) {
+                const oran = 1 - (arduinoDeger / 1023);
                 const hedefX = -4 + oran * 8;
-                
-                // Yumuşak hareket
                 oyuncuAraba.position.x += (hedefX - oyuncuAraba.position.x) * 0.2;
-                
-                // Sınırlar
                 if (oyuncuAraba.position.x < -4) oyuncuAraba.position.x = -4;
                 if (oyuncuAraba.position.x > 4) oyuncuAraba.position.x = 4;
 
-                // Skor artır
                 skor += Math.floor(hiz * 10);
                 document.getElementById("skor").innerText = skor;
                 
-                // Hız artışı
-                if (skor > 0 && skor % 500 === 0) hiz += 0.1;
+                if (skor - sonBolumSkoru >= zorlukAyarlari[zorluk].bolumSkor) {
+                    sonBolumSkoru = skor;
+                    bolumGecisi();
+                }
                 
-                // Kamera takip
                 camera.position.x = oyuncuAraba.position.x * 0.5;
                 camera.position.z = oyuncuAraba.position.z + 10;
                 camera.position.y = 5;
                 camera.lookAt(oyuncuAraba.position.x, 1, oyuncuAraba.position.z - 10);
 
-                // Yol çizgilerini hareket ettir
                 cizgiler.forEach(cizgi => {
                     cizgi.position.z += hiz;
                     if (cizgi.position.z > 10) cizgi.position.z -= 200;
                 });
 
-                // Binaları hareket ettir
                 binalar.forEach(bina => {
                     bina.position.z += hiz;
                     if (bina.position.z > 10) {
@@ -364,26 +534,23 @@
                     }
                 });
 
-                // Rakip oluştur
                 rakipZaman += hiz;
-                if (rakipZaman > 100) {
+                if (rakipZaman > zorlukAyarlari[zorluk].rakipSiklik - bolum * 5) {
                     rakipOlustur();
                     rakipZaman = 0;
                 }
 
-                // Rakipleri hareket ettir
+                // Rakipleri güncelle (YAPAY ZEKA)
                 for (let i = rakipler.length - 1; i >= 0; i--) {
                     const r = rakipler[i];
-                    r.position.z += hiz * 1.5;
+                    r.guncelle(oyuncuAraba.position.x, hiz, rakipler);
                     
-                    // Çarpışma kontrolü
-                    if (carpismaKontrol(oyuncuAraba, r)) {
+                    if (carpismaKontrol(oyuncuAraba, r.mesh)) {
                         oyunBitir();
                         return;
                     }
-                    
-                    if (r.position.z > 15) {
-                        scene.remove(r);
+                    if (r.mesh.position.z > 15) {
+                        r.temizle();
                         rakipler.splice(i, 1);
                     }
                 }
@@ -403,19 +570,17 @@
             }
             
             setTimeout(() => {
-                alert("💥 Oyun Bitti! Skor: " + skor);
+                alert("💥 Oyun Bitti!\n\nSkor: " + skor + "\nBölüm: " + bolum + "\nZorluk: " + zorluk.toUpperCase());
             }, 100);
         }
 
-        // Pencere boyutu
         window.addEventListener("resize", () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Başlat
-        animate(0);
+        animate();
     </script>
 </body>
 </html>
