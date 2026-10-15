@@ -76,14 +76,17 @@
             transform:translate(-50%,-50%);
             background:rgba(0,0,0,0.9);
             border:3px solid #ffd700;border-radius:20px;
-            padding:30px 50px;text-align:center;
+            padding:30px 60px;text-align:center;
             z-index:150;display:none;
-            box-shadow:0 0 40px gold;
+            box-shadow:0 0 50px gold;
+            pointer-events:none;
+        }
+        .bolum-mesaj.aktif{
+            display:block;
             animation:bolumAnim 0.5s ease;
         }
-        .bolum-mesaj.aktif{display:block;}
         .bolum-mesaj h2{
-            color:#ffd700;font-size:2em;
+            color:#ffd700;font-size:2.2em;
             text-shadow:0 0 15px gold;
             margin-bottom:10px;
         }
@@ -113,7 +116,7 @@
     <div class="bilgi">
         🎮 Potansiyometreyi çevir<br>
         🚗 Arabayı kontrol et<br>
-        🧠 Rakipler artık akıllı!
+        🧠 Rakipler akıllı!
     </div>
 
     <div class="alt-panel">
@@ -265,7 +268,7 @@
         // ==================== YAPAY ZEKA RAKİP SINIFI ====================
         class AIRakip {
             constructor(tip) {
-                this.tip = tip; // "normal", "agresif", "zikzak", "hizli"
+                this.tip = tip;
                 this.mesh = arabaYap(this.tipRenk());
                 this.mesh.position.set(-4 + Math.random() * 8, 0, -100);
                 scene.add(this.mesh);
@@ -276,7 +279,6 @@
                 this.seritDegistirmeZaman = 0;
                 this.zikzakYon = 1;
                 
-                // Tip özellikleri
                 if (tip === "agresif") {
                     this.hiz = 0.8;
                     this.zeka = 1.0;
@@ -300,12 +302,9 @@
             }
 
             guncelle(oyuncuX, hiz, rakipler) {
-                // Zeka seviyesine göre oyuncuyu takip et
                 if (this.zeka > 0.5) {
-                    // Oyuncuya doğru yönel
                     this.hedefX = oyuncuX;
                 } else if (this.tip === "zikzak") {
-                    // Zikzak çiz
                     this.seritDegistirmeZaman++;
                     if (this.seritDegistirmeZaman > 30) {
                         this.zikzakYon *= -1;
@@ -313,7 +312,6 @@
                     }
                     this.hedefX += this.zikzakYon * 0.15;
                 } else {
-                    // Rastgele şerit değiştir
                     this.seritDegistirmeZaman++;
                     if (this.seritDegistirmeZaman > 60) {
                         this.hedefX = -4 + Math.random() * 8;
@@ -321,27 +319,21 @@
                     }
                 }
 
-                // Diğer rakiplerden kaçınma (zeka seviyesi yüksekse)
                 if (this.zeka > 0.7) {
                     rakipler.forEach(diger => {
                         if (diger === this) return;
                         const dx = this.mesh.position.x - diger.mesh.position.x;
                         const dz = this.mesh.position.z - diger.mesh.position.z;
                         if (Math.abs(dz) < 5 && Math.abs(dx) < 2) {
-                            // Yandan kaç
                             this.hedefX += dx > 0 ? 0.2 : -0.2;
                         }
                     });
                 }
 
-                // Sınırlar
                 if (this.hedefX < -4) this.hedefX = -4;
                 if (this.hedefX > 4) this.hedefX = 4;
 
-                // Yumuşak hareket
                 this.mesh.position.x += (this.hedefX - this.mesh.position.x) * 0.1;
-
-                // İleri hareket
                 this.mesh.position.z += hiz * this.hiz;
             }
 
@@ -372,7 +364,6 @@
         
         let bolum = 1;
         let sonBolumSkoru = 0;
-        let bolumGecisAktif = false;
 
         document.getElementById("eniyi").innerText = enIyi;
 
@@ -441,22 +432,19 @@
             oyunAktif = true;
             hiz = zorlukAyarlari[zorluk].hiz;
             rakipZaman = 0;
-            bolumGecisAktif = false;
             
             document.getElementById("skor").innerText = "0";
             document.getElementById("bolum").innerText = "1";
         }
 
-        // Yapay zeka rakip oluştur
         function rakipOlustur() {
             const tipler = ["normal", "agresif", "zikzak", "hizli"];
             let tip;
             
-            // Zorluk ve bölüme göre tip seç
             if (bolum < 2) {
                 tip = "normal";
             } else if (bolum < 4) {
-                tip = tipler[Math.floor(Math.random() * 2)]; // normal, agresif
+                tip = tipler[Math.floor(Math.random() * 2)];
             } else {
                 tip = tipler[Math.floor(Math.random() * tipler.length)];
             }
@@ -484,14 +472,13 @@
             else if (bolum >= 6) mesaj = "Sen bir efsanesin! 🔥";
             document.getElementById("bolumMesajAlt").innerText = mesaj;
             
+            // Mesajı göster (2 saniye sonra kendiliğinden kaybolur)
             document.getElementById("bolumMesaj").classList.add("aktif");
-            bolumGecisAktif = true;
-            
             setTimeout(() => {
                 document.getElementById("bolumMesaj").classList.remove("aktif");
-                bolumGecisAktif = false;
             }, 2000);
             
+            // Hız anında artar, oyun DURMAZ
             hiz += zorlukAyarlari[zorluk].hizArtis * 2;
         }
 
@@ -499,7 +486,7 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            if (oyunAktif && !oyunBitti && !bolumGecisAktif) {
+            if (oyunAktif && !oyunBitti) {
                 const oran = 1 - (arduinoDeger / 1023);
                 const hedefX = -4 + oran * 8;
                 oyuncuAraba.position.x += (hedefX - oyuncuAraba.position.x) * 0.2;
@@ -540,7 +527,6 @@
                     rakipZaman = 0;
                 }
 
-                // Rakipleri güncelle (YAPAY ZEKA)
                 for (let i = rakipler.length - 1; i >= 0; i--) {
                     const r = rakipler[i];
                     r.guncelle(oyuncuAraba.position.x, hiz, rakipler);
