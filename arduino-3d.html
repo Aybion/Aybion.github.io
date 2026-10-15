@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏎️ 3D Arduino Yarış</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:#000;color:#e0e0e0;
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            overflow:hidden;
+        }
+        canvas{display:block;}
+        .ust-panel{
+            position:fixed;top:0;left:0;right:0;
+            background:rgba(0,0,0,0.7);padding:15px;
+            display:flex;justify-content:space-between;align-items:center;
+            z-index:100;border-bottom:2px solid #c084fc;
+        }
+        .ust-panel h1{
+            color:#ffd700;font-size:1.2em;text-shadow:0 0 10px gold;
+        }
+        .skorlar{display:flex;gap:20px;font-size:0.9em;}
+        .skor{color:#ffd700;font-weight:bold;}
+        .eniyi{color:#c084fc;}
+        .alt-panel{
+            position:fixed;bottom:0;left:0;right:0;
+            background:rgba(0,0,0,0.7);padding:15px;
+            text-align:center;z-index:100;
+            border-top:2px solid #c084fc;
+        }
+        .durum{
+            color:#ff6b6b;font-weight:bold;margin-bottom:8px;
+        }
+        .durum.bagli{color:#4ade80;}
+        button{
+            background:#c084fc;color:#000;border:none;
+            padding:10px 25px;font-size:1em;border-radius:25px;
+            cursor:pointer;font-weight:bold;margin:0 5px;
+            transition:0.3s;
+        }
+        button:hover{background:#ffd700;box-shadow:0 0 15px gold;}
+        button:disabled{opacity:0.5;cursor:not-allowed;}
+        .bilgi{
+            position:fixed;top:70px;left:20px;
+            background:rgba(0,0,0,0.6);padding:10px;
+            border-radius:10px;font-size:0.8em;
+            color:#c084fc;z-index:100;
+        }
+    </style>
+</head>
+<body>
+    <div class="ust-panel">
+        <h1>🏎️ 3D Arduino Yarış</h1>
+        <div class="skorlar">
+            <span class="skor">🏆 Skor: <span id="skor">0</span></span>
+            <span class="eniyi">👑 En İyi: <span id="eniyi">0</span></span>
+        </div>
+    </div>
+
+    <div class="bilgi">
+        🎮 Potansiyometreyi çevir<br>
+        🚗 Arabayı kontrol et
+    </div>
+
+    <div class="alt-panel">
+        <div class="durum" id="durum">🔌 Arduino'ya Bağlan</div>
+        <button id="baglanBtn" onclick="arduinoBaglan()">🔌 Bağlan</button>
+        <button id="baslatBtn" onclick="oyunuBaslat()" disabled>🔄 Yeniden Başla</button>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // ==================== THREE.JS KURULUM ====================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb); // Gökyüzü mavi
+        scene.fog = new THREE.Fog(0x87ceeb, 50, 150);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Işık
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 20, 10);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        // ==================== ZEMİN ====================
+        const zeminGeo = new THREE.PlaneGeometry(200, 200);
+        const zeminMat = new THREE.MeshStandardMaterial({ color: 0x1a3a1a });
+        const zemin = new THREE.Mesh(zeminGeo, zeminMat);
+        zemin.rotation.x = -Math.PI / 2;
+        zemin.position.y = -0.01;
+        zemin.receiveShadow = true;
+        scene.add(zemin);
+
+        // Yol
+        const yolGeo = new THREE.PlaneGeometry(10, 200);
+        const yolMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+        const yol = new THREE.Mesh(yolGeo, yolMat);
+        yol.rotation.x = -Math.PI / 2;
+        scene.add(yol);
+
+        // Yol çizgileri (kesikli)
+        const cizgiMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.3 });
+        const cizgiler = [];
+        for (let i = 0; i < 50; i++) {
+            const cizgiGeo = new THREE.PlaneGeometry(0.3, 2);
+            const cizgi = new THREE.Mesh(cizgiGeo, cizgiMat);
+            cizgi.rotation.x = -Math.PI / 2;
+            cizgi.position.set(0, 0.01, -i * 4);
+            scene.add(cizgi);
+            cizgiler.push(cizgi);
+        }
+
+        // Yol kenarları (beyaz şeritler)
+        const seritMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const seritSolGeo = new THREE.PlaneGeometry(0.3, 200);
+        const seritSol = new THREE.Mesh(seritSolGeo, seritMat);
+        seritSol.rotation.x = -Math.PI / 2;
+        seritSol.position.set(-5, 0.01, 0);
+        scene.add(seritSol);
+        
+        const seritSag = new THREE.Mesh(seritSolGeo, seritMat);
+        seritSag.rotation.x = -Math.PI / 2;
+        seritSag.position.set(5, 0.01, 0);
+        scene.add(seritSag);
+
+        // ==================== ARABA OLUŞTUR ====================
+        function arabaYap(renk) {
+            const araba = new THREE.Group();
+
+            // Gövde
+            const govdeGeo = new THREE.BoxGeometry(1.8, 0.8, 3.5);
+            const govdeMat = new THREE.MeshStandardMaterial({ color: renk, metalness: 0.5, roughness: 0.3 });
+            const govde = new THREE.Mesh(govdeGeo, govdeMat);
+            govde.position.y = 0.6;
+            govde.castShadow = true;
+            araba.add(govde);
+
+            // Tavan
+            const tavanGeo = new THREE.BoxGeometry(1.4, 0.6, 1.8);
+            const tavanMat = new THREE.MeshStandardMaterial({ color: renk, metalness: 0.5, roughness: 0.3 });
+            const tavan = new THREE.Mesh(tavanGeo, tavanMat);
+            tavan.position.set(0, 1.3, -0.2);
+            tavan.castShadow = true;
+            araba.add(tavan);
+
+            // Cam (ön)
+            const camGeo = new THREE.BoxGeometry(1.3, 0.5, 0.1);
+            const camMat = new THREE.MeshStandardMaterial({ color: 0x87ceeb, transparent: true, opacity: 0.6 });
+            const camOn = new THREE.Mesh(camGeo, camMat);
+            camOn.position.set(0, 1.3, 0.7);
+            araba.add(camOn);
+
+            // Tekerlekler
+            const tekerlekGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            const tekerlekMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+            const tekerlekPozisyonlari = [
+                [-0.9, 0.4, 1.2], [0.9, 0.4, 1.2],
+                [-0.9, 0.4, -1.2], [0.9, 0.4, -1.2]
+            ];
+            tekerlekPozisyonlari.forEach(pos => {
+                const tekerlek = new THREE.Mesh(tekerlekGeo, tekerlekMat);
+                tekerlek.rotation.z = Math.PI / 2;
+                tekerlek.position.set(pos[0], pos[1], pos[2]);
+                tekerlek.castShadow = true;
+                araba.add(tekerlek);
+            });
+
+            // Farlar
+            const farGeo = new THREE.BoxGeometry(0.3, 0.2, 0.1);
+            const farMat = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 0.5 });
+            const farSol = new THREE.Mesh(farGeo, farMat);
+            farSol.position.set(-0.6, 0.6, 1.8);
+            araba.add(farSol);
+            const farSag = new THREE.Mesh(farGeo, farMat);
+            farSag.position.set(0.6, 0.6, 1.8);
+            araba.add(farSag);
+
+            return araba;
+        }
+
+        // Oyuncu arabası
+        const oyuncuAraba = arabaYap(0x4488ff);
+        oyuncuAraba.position.set(0, 0, 5);
+        scene.add(oyuncuAraba);
+
+        // ==================== BİNALAR ====================
+        const binalar = [];
+        function binaOlustur() {
+            const genislik = 2 + Math.random() * 3;
+            const yukseklik = 3 + Math.random() * 8;
+            const derinlik = 2 + Math.random() * 3;
+            const renk = new THREE.Color().setHSL(Math.random() * 0.2 + 0.5, 0.5, 0.4);
+            
+            const binaGeo = new THREE.BoxGeometry(genislik, yukseklik, derinlik);
+            const binaMat = new THREE.MeshStandardMaterial({ color: renk });
+            const bina = new THREE.Mesh(binaGeo, binaMat);
+            
+            const taraf = Math.random() > 0.5 ? 1 : -1;
+            bina.position.set(taraf * (10 + Math.random() * 15), yukseklik / 2, -100 - Math.random() * 50);
+            bina.castShadow = true;
+            bina.receiveShadow = true;
+            scene.add(bina);
+            binalar.push(bina);
+        }
+        for (let i = 0; i < 30; i++) binaOlustur();
+
+        // ==================== OYUN DEĞİŞKENLERİ ====================
+        let rakipler = [];
+        let skor = 0;
+        let enIyi = parseInt(localStorage.getItem("arduino3DEnIyi") || "0");
+        let oyunBitti = false;
+        let hiz = 0.5;
+        let arduinoDeger = 512;
+        let arduinoBagli = false;
+        let port = null;
+        let reader = null;
+        let rakipZaman = 0;
+        let oyunAktif = false;
+
+        document.getElementById("eniyi").innerText = enIyi;
+
+        // ==================== ARDUINO BAĞLANTISI ====================
+        async function arduinoBaglan() {
+            const durum = document.getElementById("durum");
+            
+            if (!("serial" in navigator)) {
+                durum.innerText = "❌ Web Serial desteklenmiyor!";
+                return;
+            }
+
+            try {
+                durum.innerText = "🔌 Bağlanıyor...";
+                port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 9600 });
+                
+                arduinoBagli = true;
+                durum.innerText = "✅ Arduino Bağlı!";
+                durum.className = "durum bagli";
+                document.getElementById("baglanBtn").disabled = true;
+                document.getElementById("baslatBtn").disabled = false;
+                
+                okumayaBasla();
+                oyunuBaslat();
+            } catch (err) {
+                durum.innerText = "❌ Hata: " + err.message;
+            }
+        }
+
+        async function okumayaBasla() {
+            const textDecoder = new TextDecoderStream();
+            port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+            
+            let tampon = "";
+            while (true) {
+                try {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    if (value) {
+                        tampon += value;
+                        const satirlar = tampon.split("\n");
+                        tampon = satirlar.pop();
+                        for (const satir of satirlar) {
+                            const deger = parseInt(satir.trim());
+                            if (!isNaN(deger)) {
+                                arduinoDeger = deger;
+                            }
+                        }
+                    }
+                } catch (err) { break; }
+            }
+        }
+
+        // ==================== OYUN ====================
+        function oyunuBaslat() {
+            if (!arduinoBagli) return;
+            
+            // Eski rakipleri temizle
+            rakipler.forEach(r => scene.remove(r));
+            rakipler = [];
+            
+            oyuncuAraba.position.set(0, 0, 5);
+            skor = 0;
+            oyunBitti = false;
+            oyunAktif = true;
+            hiz = 0.5;
+            rakipZaman = 0;
+            document.getElementById("skor").innerText = "0";
+        }
+
+        function rakipOlustur() {
+            const rakip = arabaYap(0xff3333);
+            const x = -4 + Math.random() * 8;
+            rakip.position.set(x, 0, -100);
+            scene.add(rakip);
+            rakipler.push(rakip);
+        }
+
+        function carpismaKontrol(a, b) {
+            const dx = Math.abs(a.position.x - b.position.x);
+            const dz = Math.abs(a.position.z - b.position.z);
+            return dx < 1.5 && dz < 2.5;
+        }
+
+        // ==================== ANİMASYON DÖNGÜSÜ ====================
+        let sonZaman = 0;
+        function animate(zaman) {
+            requestAnimationFrame(animate);
+            
+            if (oyunAktif && !oyunBitti) {
+                // Potansiyometre değerini kullan (0-1023 arası)
+                const oran = 1 - (arduinoDeger / 1023); // Ters çevir
+                const hedefX = -4 + oran * 8;
+                
+                // Yumuşak hareket
+                oyuncuAraba.position.x += (hedefX - oyuncuAraba.position.x) * 0.2;
+                
+                // Sınırlar
+                if (oyuncuAraba.position.x < -4) oyuncuAraba.position.x = -4;
+                if (oyuncuAraba.position.x > 4) oyuncuAraba.position.x = 4;
+
+                // Skor artır
+                skor += Math.floor(hiz * 10);
+                document.getElementById("skor").innerText = skor;
+                
+                // Hız artışı
+                if (skor > 0 && skor % 500 === 0) hiz += 0.1;
+                
+                // Kamera takip
+                camera.position.x = oyuncuAraba.position.x * 0.5;
+                camera.position.z = oyuncuAraba.position.z + 10;
+                camera.position.y = 5;
+                camera.lookAt(oyuncuAraba.position.x, 1, oyuncuAraba.position.z - 10);
+
+                // Yol çizgilerini hareket ettir
+                cizgiler.forEach(cizgi => {
+                    cizgi.position.z += hiz;
+                    if (cizgi.position.z > 10) cizgi.position.z -= 200;
+                });
+
+                // Binaları hareket ettir
+                binalar.forEach(bina => {
+                    bina.position.z += hiz;
+                    if (bina.position.z > 10) {
+                        bina.position.z = -100 - Math.random() * 50;
+                        const taraf = Math.random() > 0.5 ? 1 : -1;
+                        bina.position.x = taraf * (10 + Math.random() * 15);
+                        bina.position.y = (3 + Math.random() * 8) / 2;
+                    }
+                });
+
+                // Rakip oluştur
+                rakipZaman += hiz;
+                if (rakipZaman > 100) {
+                    rakipOlustur();
+                    rakipZaman = 0;
+                }
+
+                // Rakipleri hareket ettir
+                for (let i = rakipler.length - 1; i >= 0; i--) {
+                    const r = rakipler[i];
+                    r.position.z += hiz * 1.5;
+                    
+                    // Çarpışma kontrolü
+                    if (carpismaKontrol(oyuncuAraba, r)) {
+                        oyunBitir();
+                        return;
+                    }
+                    
+                    if (r.position.z > 15) {
+                        scene.remove(r);
+                        rakipler.splice(i, 1);
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function oyunBitir() {
+            oyunBitti = true;
+            oyunAktif = false;
+            
+            if (skor > enIyi) {
+                enIyi = skor;
+                localStorage.setItem("arduino3DEnIyi", enIyi);
+                document.getElementById("eniyi").innerText = enIyi;
+            }
+            
+            setTimeout(() => {
+                alert("💥 Oyun Bitti! Skor: " + skor);
+            }, 100);
+        }
+
+        // Pencere boyutu
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Başlat
+        animate(0);
+    </script>
+</body>
+</html>
