@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏎️ Arduino Kontrollü Yarış</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:linear-gradient(135deg,#0d0d0d,#1a0033,#0d0d0d);
+            color:#e0e0e0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            display:flex;justify-content:center;align-items:center;
+            min-height:100vh;flex-direction:column;padding:20px;
+        }
+        h1{color:#ffd700;text-shadow:0 0 10px gold;margin-bottom:10px;font-size:1.8em;text-align:center;}
+        .durum{
+            background:rgba(30,10,60,0.8);border:2px solid #c084fc;
+            border-radius:12px;padding:10px 20px;margin-bottom:10px;
+            color:#ffd700;font-weight:bold;text-align:center;
+        }
+        .durum.bagli{color:#4ade80;border-color:#4ade80;}
+        .durum.bagli-degil{color:#ff6b6b;border-color:#ff6b6b;}
+        canvas{
+            border:3px solid #c084fc;border-radius:15px;
+            box-shadow:0 0 20px rgba(192,132,252,0.4);
+            background:#1a3a1a;display:block;
+        }
+        .skorlar{
+            display:flex;gap:30px;margin:10px 0;font-size:1.1em;
+        }
+        .skor{color:#ffd700;font-weight:bold;}
+        .eniyi{color:#c084fc;}
+        button{
+            background:#c084fc;color:#000;border:none;padding:12px 30px;
+            font-size:1.1em;border-radius:30px;cursor:pointer;font-weight:bold;
+            margin:5px;transition:0.3s;
+        }
+        button:hover{background:#ffd700;box-shadow:0 0 15px gold;}
+        button:disabled{opacity:0.5;cursor:not-allowed;}
+        .bilgi{
+            background:rgba(30,10,60,0.6);border:2px solid #c084fc;
+            border-radius:12px;padding:15px;margin-top:15px;
+            max-width:500px;text-align:left;font-size:0.9em;
+        }
+        .bilgi strong{color:#ffd700;}
+        p{color:#aaa;font-size:0.85em;margin-top:10px;text-align:center;}
+        a{color:#60a5fa;text-decoration:none;margin-top:15px;}
+        a:hover{color:#ffd700;}
+    </style>
+</head>
+<body>
+    <h1>🏎️ Arduino Kontrollü Yarış</h1>
+    
+    <div class="durum bagli-degil" id="durum">🔌 Arduino'ya Bağlan</div>
+    
+    <div class="skorlar">
+        <span class="skor">🏆 Skor: <span id="skor">0</span></span>
+        <span class="eniyi">👑 En İyi: <span id="eniyi">0</span></span>
+    </div>
+
+    <canvas id="oyunCanvas" width="400" height="500"></canvas>
+
+    <div>
+        <button id="baglanBtn" onclick="arduinoBaglan()">🔌 Arduino'ya Bağlan</button>
+        <button onclick="oyunuBaslat()" id="baslatBtn" disabled>🔄 Yeniden Başla</button>
+    </div>
+
+    <div class="bilgi">
+        <strong>📖 Nasıl Oynanır?</strong>
+        <p style="text-align:left;color:#e0e0e0;margin-top:8px;">1. Önce Arduino'yu USB ile bağla</p>
+        <p style="text-align:left;color:#e0e0e0;">2. "Arduino'ya Bağlan" butonuna bas</p>
+        <p style="text-align:left;color:#e0e0e0;">3. Açılan pencereden Arduino'yu (COM5) seç</p>
+        <p style="text-align:left;color:#e0e0e0;">4. Potansiyometreyi çevir, arabayı kontrol et!</p>
+    </div>
+
+    <p>Chrome veya Edge tarayıcı gerekir</p>
+    <a href="index.html">🏠 Ana Sayfaya Dön</a>
+
+    <script>
+        const canvas = document.getElementById("oyunCanvas");
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width;
+        const H = canvas.height;
+        
+        // Yol sınırları
+        const YOL_SOL = 40;
+        const YOL_SAG = 360;
+        const YOL_GENISLIK = YOL_SAG - YOL_SOL;
+
+        let araba = { x: 200, y: 400, w: 40, h: 70 };
+        let rakipler = [];
+        let skor = 0;
+        let enIyi = parseInt(localStorage.getItem("arduinoYarisEnIyi") || "0");
+        let oyunBitti = false;
+        let animasyon;
+        let yolOfset = 0;
+        let zorluk = 1;
+        let rakipSure = 0;
+        let arduinoDeger = 512; // Başlangıç değeri (orta)
+        let arduinoBagli = false;
+        let port = null;
+        let reader = null;
+
+        document.getElementById("eniyi").innerText = enIyi;
+
+        // ==================== ARDUINO BAĞLANTISI ====================
+        async function arduinoBaglan() {
+            const durum = document.getElementById("durum");
+            
+            if (!("serial" in navigator)) {
+                durum.innerText = "❌ Tarayıcı Web Serial desteklemiyor!";
+                durum.className = "durum bagli-degil";
+                return;
+            }
+
+            try {
+                durum.innerText = "🔌 Bağlanıyor...";
+                
+                port = await navigator.serial.requestPort();
+                await port.open({ baudRate: 9600 });
+                
+                arduinoBagli = true;
+                durum.innerText = "✅ Arduino Bağlı!";
+                durum.className = "durum bagli";
+                document.getElementById("baglanBtn").disabled = true;
+                document.getElementById("baslatBtn").disabled = false;
+                
+                // Veri okumaya başla
+                okumayaBasla();
+                
+                // Oyunu başlat
+                oyunuBaslat();
+                
+            } catch (err) {
+                console.error(err);
+                durum.innerText = "❌ Bağlantı hatası: " + err.message;
+                durum.className = "durum bagli-degil";
+            }
+        }
+
+        async function okumayaBasla() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+            
+            let tampon = "";
+            
+            while (true) {
+                try {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    if (value) {
+                        tampon += value;
+                        const satirlar = tampon.split("\n");
+                        tampon = satirlar.pop();
+                        
+                        for (const satir of satirlar) {
+                            const deger = parseInt(satir.trim());
+                            if (!isNaN(deger)) {
+                                arduinoDeger = deger;
+                                // 0-1023 arası değeri yol genişliğine çevir
+                                const oran = deger / 1023;
+                                araba.x = YOL_SOL + oran * (YOL_GENISLIK - araba.w);
+                                // Sınırları kontrol et
+                                if (araba.x < YOL_SOL) araba.x = YOL_SOL;
+                                if (araba.x + araba.w > YOL_SAG) araba.x = YOL_SAG - araba.w;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                    break;
+                }
+            }
+        }
+
+        // ==================== OYUN ====================
+        function oyunuBaslat() {
+            if (!arduinoBagli) return;
+            
+            araba.y = 400;
+            rakipler = [];
+            skor = 0;
+            oyunBitti = false;
+            yolOfset = 0;
+            zorluk = 1;
+            rakipSure = 0;
+            document.getElementById("skor").innerText = "0";
+            
+            if (animasyon) cancelAnimationFrame(animasyon);
+            oyunDongusu();
+        }
+
+        function oyunDongusu() {
+            if (oyunBitti) return;
+            
+            skor++;
+            document.getElementById("skor").innerText = skor;
+            zorluk = 1 + Math.floor(skor / 300);
+            
+            // Yol çizgisi
+            yolOfset += 3 + zorluk;
+            if (yolOfset > 40) yolOfset = 0;
+            
+            // Rakip oluştur
+            rakipSure++;
+            if (rakipSure > Math.max(30, 80 - zorluk * 5)) {
+                rakipler.push({
+                    x: YOL_SOL + 10 + Math.random() * (YOL_GENISLIK - 60),
+                    y: -80,
+                    w: 40,
+                    h: 70,
+                    hiz: 2 + Math.random() * zorluk
+                });
+                rakipSure = 0;
+            }
+            
+            // Rakipleri hareket ettir
+            for (let i = rakipler.length - 1; i >= 0; i--) {
+                rakipler[i].y += rakipler[i].hiz;
+                
+                // Çarpışma kontrolü
+                if (carpisma(araba, rakipler[i])) {
+                    oyunuBitir();
+                    return;
+                }
+                
+                if (rakipler[i].y > H + 100) {
+                    rakipler.splice(i, 1);
+                }
+            }
+            
+            ciz();
+            animasyon = requestAnimationFrame(oyunDongusu);
+        }
+
+        function carpisma(a, b) {
+            const marj = 8;
+            return a.x + marj < b.x + b.w - marj &&
+                   a.x + a.w - marj > b.x + marj &&
+                   a.y + marj < b.y + b.h - marj &&
+                   a.y + a.h - marj > b.y + marj;
+        }
+
+        function ciz() {
+            // Çimen
+            ctx.fillStyle = "#1a3a1a";
+            ctx.fillRect(0, 0, W, H);
+            
+            // Yol
+            ctx.fillStyle = "#333";
+            ctx.fillRect(YOL_SOL, 0, YOL_GENISLIK, H);
+            
+            // Kenarlar
+            ctx.fillStyle = "#ff4444";
+            ctx.fillRect(YOL_SOL - 4, 0, 4, H);
+            ctx.fillRect(YOL_SAG, 0, 4, H);
+            
+            // Beyaz şeritler
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(YOL_SOL - 2, 0, 2, H);
+            ctx.fillRect(YOL_SAG - 2, 0, 2, H);
+            
+            // Kesikli çizgi
+            ctx.fillStyle = "#ffd700";
+            for (let y = -40 + yolOfset; y < H; y += 40) {
+                ctx.fillRect(W/2 - 3, y, 6, 20);
+            }
+            
+            // Rakipler (kırmızı)
+            for (let r of rakipler) {
+                ctx.fillStyle = "#ff3333";
+                ctx.fillRect(r.x + 3, r.y + 8, 34, 54);
+                ctx.fillStyle = "#cc0000";
+                ctx.fillRect(r.x + 8, r.y + 12, 24, 25);
+                ctx.fillStyle = "#87ceeb";
+                ctx.fillRect(r.x + 10, r.y + 14, 9, 14);
+                ctx.fillRect(r.x + 21, r.y + 14, 9, 14);
+                ctx.fillStyle = "#111";
+                ctx.fillRect(r.x, r.y + 12, 6, 14);
+                ctx.fillRect(r.x + 34, r.y + 12, 6, 14);
+                ctx.fillRect(r.x, r.y + 44, 6, 14);
+                ctx.fillRect(r.x + 34, r.y + 44, 6, 14);
+            }
+            
+            // Oyuncu arabası (mavi)
+            ctx.fillStyle = "#4488ff";
+            ctx.fillRect(araba.x + 3, araba.y + 8, 34, 54);
+            ctx.fillStyle = "#2266dd";
+            ctx.fillRect(araba.x + 8, araba.y + 12, 24, 25);
+            ctx.fillStyle = "#87ceeb";
+            ctx.fillRect(araba.x + 10, araba.y + 14, 9, 14);
+            ctx.fillRect(araba.x + 21, araba.y + 14, 9, 14);
+            ctx.fillStyle = "#111";
+            ctx.fillRect(araba.x, araba.y + 12, 6, 14);
+            ctx.fillRect(araba.x + 34, araba.y + 12, 6, 14);
+            ctx.fillRect(araba.x, araba.y + 44, 6, 14);
+            ctx.fillRect(araba.x + 34, araba.y + 44, 6, 14);
+            ctx.fillStyle = "#ff0";
+            ctx.fillRect(araba.x + 8, araba.y + 4, 6, 6);
+            ctx.fillRect(araba.x + 26, araba.y + 4, 6, 6);
+        }
+
+        function oyunuBitir() {
+            oyunBitti = true;
+            if (animasyon) cancelAnimationFrame(animasyon);
+            
+            if (skor > enIyi) {
+                enIyi = skor;
+                localStorage.setItem("arduinoYarisEnIyi", enIyi);
+                document.getElementById("eniyi").innerText = enIyi;
+            }
+            
+            ctx.fillStyle = "rgba(0,0,0,0.75)";
+            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = "#ff4444";
+            ctx.font = "bold 30px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.fillText("💥 OYUN BİTTİ!", W/2, H/2 - 25);
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "20px 'Segoe UI'";
+            ctx.fillText("Skor: " + skor, W/2, H/2 + 20);
+        }
+
+        // Başlangıçta oyun alanını çiz
+        ciz();
+    </script>
+</body>
+</html>
